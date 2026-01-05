@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iran Protest Map</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        /* Animation */
+        @keyframes slide-in-right {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slide-in-right {
+            animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.2s ease-out;
+        }
+
+        /* Leaflet Tooltip Customization */
+        .leaflet-tooltip-pane .custom-tooltip {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            color: #1f2937;
+            padding: 8px 12px;
+            
+            /* Updated Layout Logic */
+            width: max-content; /* Force width to match content length on one line first */
+            max-width: min(460px, 90vw); /* Cap width wide enough for 2 lines, responsive on mobile */
+            white-space: normal; /* Allow wrapping only when max-width is hit */
+            
+            text-align: center;
+            line-height: 1.4;
+            transition: all 0.3s ease;
+        }
+        .leaflet-tooltip-pane .custom-tooltip::before {
+            border-top-color: rgba(255, 255, 255, 0.95);
+        }
+
+        /* Dark Mode Tooltip Overrides */
+        body.dark-theme .leaflet-tooltip-pane .custom-tooltip {
+            background: rgba(17, 24, 39, 0.95); /* Gray-900 with opacity */
+            border: 1px solid rgba(75, 85, 99, 0.5); /* Gray-600 */
+            color: #f3f4f6; /* Gray-100 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+        body.dark-theme .leaflet-tooltip-pane .custom-tooltip::before {
+            border-top-color: rgba(17, 24, 39, 0.95);
+        }
+        
+        /* Custom Scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Cross-browser Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            width: 100%; 
+            background: transparent; 
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #2563eb; 
+            cursor: pointer;
+            margin-top: -6px; 
+            box-shadow: 0 0 2px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+        }
+        
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 2px;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        /* Firefox */
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 2px;
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 16px;
+            width: 16px;
+            border: none;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            box-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 overflow-hidden">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- Icons ---
+        const IconSun = ({ size = 20 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>;
+        const IconMoon = ({ size = 20 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>;
+        const IconZoomIn = ({ size = 18 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>;
+        const IconZoomOut = ({ size = 18 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>;
+        const IconInfo = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>;
+        const IconX = ({ size = 20 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+        const IconCalendar = ({ size = 16 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
+        const IconMapPin = ({ size = 16 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>;
+        const IconExternalLink = ({ size = 12 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>;
+        const IconChart = ({ size = 18 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>;
+        const IconRefresh = ({ size = 16 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>;
+        const IconPlay = ({ size = 16 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
+        const IconPause = ({ size = 16 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>;
+
+        // --- Tweet Component ---
+        const TweetEmbed = ({ url }) => {
+            const containerRef = useRef(null);
+
+            useEffect(() => {
+                if (!url || !containerRef.current) return;
+                const tweetId = url.split('/').pop().split('?')[0];
+                containerRef.current.innerHTML = ''; 
+
+                if (window.twttr && window.twttr.widgets) {
+                    window.twttr.widgets.createTweet(
+                        tweetId,
+                        containerRef.current,
+                        { theme: 'light', conversation: 'none', align: 'center' }
+                    );
+                } else {
+                    const script = document.createElement('script');
+                    script.src = 'https://platform.twitter.com/widgets.js';
+                    script.async = true;
+                    script.onload = () => {
+                         if (window.twttr && window.twttr.widgets) {
+                            window.twttr.widgets.createTweet(
+                                tweetId,
+                                containerRef.current,
+                                { theme: 'light', conversation: 'none', align: 'center' }
+                            );
+                         }
+                    };
+                    document.body.appendChild(script);
+                }
+            }, [url]);
+
+            return (
+                <div ref={containerRef} className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 min-h-[150px] flex items-center justify-center">
+                   <div className="animate-pulse p-4 w-full flex justify-center text-gray-400 text-sm">Loading Tweet...</div>
+                </div>
+            );
+        };
+
+        // --- Graph Component (Custom SVG) ---
+        const ProtestGraph = ({ data, onClose, isDarkMode }) => {
+            const processedData = useMemo(() => {
+                const dates = [...new Set(data.map(d => d.date))].sort();
+                const series = dates.map(date => {
+                    const dayEvents = data.filter(d => d.date === date);
+                    return {
+                        date,
+                        total: dayEvents.length,
+                        small: dayEvents.filter(d => d.size === 'small').length,
+                        medium: dayEvents.filter(d => d.size === 'medium').length,
+                        big: dayEvents.filter(d => d.size === 'big').length
+                    };
+                });
+                return { dates, series };
+            }, [data]);
+
+            const { dates, series } = processedData;
+            
+            const height = 200;
+            const width = 500;
+            const padding = 30;
+            const graphWidth = width - padding * 2;
+            const graphHeight = height - padding * 2;
+            
+            const maxVal = Math.max(...series.map(s => s.total), 5); 
+            
+            const getX = (index) => padding + (index / (dates.length - 1)) * graphWidth;
+            const getY = (val) => height - padding - (val / maxVal) * graphHeight;
+
+            const createPath = (key) => {
+                if (series.length === 0) return "";
+                return "M" + series.map((p, i) => `${getX(i)},${getY(p[key])}`).join(" L");
+            };
+
+            const textColor = isDarkMode ? "text-gray-200" : "text-gray-600";
+            const bgColor = isDarkMode ? "bg-gray-900/90 border-gray-700" : "bg-white/95 border-white/20";
+
+            return (
+                <div className="fixed inset-0 z-[2001] flex items-center justify-center p-4">
+                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
+                     <div className={`relative ${bgColor} backdrop-blur-xl border shadow-2xl rounded-2xl p-6 w-full max-w-2xl animate-fade-in`}>
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Protest Activity Over Time</h2>
+                                <p className="text-xs text-gray-400 italic mt-1">Note: Date reflects date of tweet, not necessarily the date of the incident.</p>
+                            </div>
+                            <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                                <IconX />
+                            </button>
+                        </div>
+                        
+                        <div className="overflow-x-auto">
+                            <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+                                {[0, 0.25, 0.5, 0.75, 1].map((tick) => (
+                                    <line key={tick} x1={padding} y1={getY(tick * maxVal)} x2={width - padding} y2={getY(tick * maxVal)} stroke={isDarkMode ? "#374151" : "#e5e7eb"} strokeDasharray="4 4" />
+                                ))}
+                                <path d={createPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3" />
+                                <path d={createPath('big')} fill="none" stroke="#EF4444" strokeWidth="2" strokeDasharray="5 5" />
+                                <path d={createPath('medium')} fill="none" stroke="#F97316" strokeWidth="2" strokeDasharray="3 3" />
+                                <path d={createPath('small')} fill="none" stroke="#FACC15" strokeWidth="2" />
+                                {series.map((p, i) => (
+                                    <circle key={i} cx={getX(i)} cy={getY(p.total)} r="3" fill="#60A5FA" />
+                                ))}
+                                {series.map((p, i) => (
+                                    <text key={i} x={getX(i)} y={height - 5} fontSize="8" textAnchor="middle" fill={isDarkMode ? "#9CA3AF" : "#6B7280"}>{p.date.slice(5)}</text>
+                                ))}
+                            </svg>
+                        </div>
+
+                        <div className="flex justify-center space-x-4 mt-6 text-xs font-medium">
+                            <div className="flex items-center"><span className="w-3 h-1 bg-blue-400 rounded mr-2"></span><span className={textColor}>Total</span></div>
+                            <div className="flex items-center"><span className="w-3 h-1 bg-red-500 rounded mr-2 border border-dashed border-white"></span><span className={textColor}>Large</span></div>
+                            <div className="flex items-center"><span className="w-3 h-1 bg-orange-500 rounded mr-2 border border-dotted border-white"></span><span className={textColor}>Medium</span></div>
+                            <div className="flex items-center"><span className="w-3 h-1 bg-yellow-400 rounded mr-2"></span><span className={textColor}>Small</span></div>
+                        </div>
+                     </div>
+                </div>
+            );
+        };
+
+        const IranMap = () => {
+            const mapContainerRef = useRef(null);
+            const mapInstanceRef = useRef(null);
+            const tileLayerRef = useRef(null);
+            const markersRef = useRef([]); 
+            
+            const [isMapReady, setIsMapReady] = useState(false);
+            const [activeLayer, setActiveLayer] = useState('light');
+            const [zoomLevel, setZoomLevel] = useState(5);
+            const [selectedIncident, setSelectedIncident] = useState(null);
+            const [showGraph, setShowGraph] = useState(false);
+            const [dateFilter, setDateFilter] = useState(null); // null = All
+            const [isPlaying, setIsPlaying] = useState(false);
+
+            const isDarkMode = activeLayer === 'dark' || activeLayer === 'satellite';
+
+            // Sync Dark Mode with Body for Tooltip CSS
+            useEffect(() => {
+                document.body.classList.toggle('dark-theme', isDarkMode);
+            }, [isDarkMode]);
+
+            // --- Data ---
+            const rawIncidents = [
+                { "id": 1, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "coords": [35.6927461, 51.4255329], "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null },
+                { "id": 2, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "coords": [26.968793, 56.075395], "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null },
+                { "id": 3, "desc": "Group gathered in Tehran", "coords": [35.752619, 51.466106], "link": "https://x.com/GhonchehAzad/status/2005992119258038527", "date": "2025-12-30", "size": "big", "alt": null },
+                { "id": 4, "desc": "Protester sits down in front of forces outside Charsou shopping centre on Jomhouri Street, Tehran", "coords": [35.695143, 51.412703], "link": "https://x.com/Shayan86/status/2006018573769019635", "date": "2025-12-30", "size": "small", "alt": null },
+                { "id": 5, "desc": "Unrest with students running at University of Tehran", "coords": [35.7036777, 51.3956859], "link": "https://x.com/GhonchehAzad/status/2006018665456501147", "date": "2025-12-30", "size": "medium", "alt": "https://x.com/Shayan86/status/2006039256603513166" },
+                { "id": 6, "desc": "Woman leads chants of \"don't be afraid, we're all together\" in Tehran's Grand Bazaar", "coords": [35.6727692, 51.4214139], "link": "https://x.com/Shayan86/status/2006051668295647391", "date": "2025-12-30", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006036269298512269" },
+                { "id": 7, "desc": "Clashes between police and protesters in Hamedan", "coords": [34.7954883, 48.5143633], "link": "https://x.com/GhonchehAzad/status/2006077897610797143", "date": "2025-12-30", "size": "medium", "alt": "https://x.com/Shayan86/status/2006728257450946936" },
+                { "id": 8, "desc": "Man calls for help as protesters run from forces on Rajaei Street, Arak", "coords": [34.084962, 49.691045], "link": "https://x.com/Shayan86/status/2006174541567898093", "date": "2025-12-31", "size": "small", "alt": null },
+                { "id": 9, "desc": "Shots fired at protesters on Imam Khomeini Street, Fasa", "coords": [28.939864, 53.647716], "link": "https://x.com/Shayan86/status/2006332899751301458", "date": "2025-12-31", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2006331110993883448" },
+                { "id": 10, "desc": "Protesters remove entrance gate of local government building in Fasa", "coords": [28.940212, 53.648819], "link": "https://x.com/Shayan86/status/2006412023597355302", "date": "2025-12-31", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006319069432012957" },
+                { "id": 11, "desc": "Shots fired towards protesters at Imam Khomeini Square, Kuhdasht", "coords": [33.533535, 47.607890], "link": "https://x.com/Shayan86/status/2006418603029987588", "date": "2025-12-31", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006403148684943839" },
+                { "id": 12, "desc": "Protesters in Ramhormoz", "coords": [31.2800698, 49.6083711], "link": "https://x.com/GhonchehAzad/status/2006472230344220830", "date": "2025-12-31", "size": "medium", "alt": null },
+                { "id": 13, "desc": "At least one individual arrested in front of Shahid Beheshti University dormitory, Tehran", "coords": [35.8059661, 51.3938244], "link": "https://x.com/GhonchehAzad/status/2006484693064270278", "date": "2025-12-31", "size": "small", "alt": null },
+                { "id": 14, "desc": "Protesters set fire to local police station in Azna", "coords": [33.460733, 49.451621], "link": "https://x.com/Shayan86/status/2006850300645355614", "date": "2026-01-01", "size": "small", "alt": null },
+                { "id": 15, "desc": "Chants of \"don't be afraid, we're all together\" in Karaj", "coords": [35.842676, 50.971310], "link": "https://x.com/Shayan86/status/2006867020508430504", "date": "2026-01-01", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006811169957585230" },
+                { "id": 16, "desc": "Protesters pelt stones at bike-riding security forces on Del Azad Boulevard, Qom", "coords": [34.635653, 50.903530], "link": "https://x.com/Shayan86/status/2006883608489803839", "date": "2026-01-02", "size": "medium", "alt": null },
+                { "id": 17, "desc": "Protesters chant \"freedom, freedom, freedom\" on Maliabad Boulevard, Shiraz", "coords": [29.6813125, 52.4621809], "link": "https://x.com/Shayan86/status/2007140469575463141", "date": "2026-01-02", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2006840481955852628" },
+                { "id": 18, "desc": "Protesters march chanting in support of Pahlavi dynasty in central Marvdasht", "coords": [29.874124, 52.800150], "link": "https://x.com/Shayan86/status/2007143719263420764", "date": "2026-01-02", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2006729302105104558" },
+                { "id": 19, "desc": "Group gathers outside government-linked building with explosion heard in Lordegan", "coords": [31.519264, 50.824531], "link": "https://x.com/Shayan86/status/2007145981104795668", "date": "2026-01-02", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006726390729814444" },
+                { "id": 20, "desc": "Protesters chant \"people of Iran, scream and shout for your rights\" on Shariati Street, Babol", "coords": [36.565107, 52.678999], "link": "https://x.com/Shayan86/status/2007155657775227083", "date": "2026-01-02", "size": "medium", "alt": null },
+                { "id": 21, "desc": "Protesters march down Shariati Street in Babol", "coords": [36.566730, 52.678719], "link": "https://x.com/Shayan86/status/2007174357404266769", "date": "2026-01-02", "size": "medium", "alt": null },
+                { "id": 22, "desc": "Security forces detain a young woman near Haft Hoz Square, east Tehran", "coords": [35.731604, 51.494020], "link": "https://x.com/Shayan86/status/2007158833781637299", "date": "2026-01-02", "size": "small", "alt": null },
+                { "id": 23, "desc": "Protesters outside police station with gunshots heard in Marvdasht", "coords": [29.880899, 52.808695], "link": "https://x.com/Shayan86/status/2007166728086925314", "date": "2026-01-02", "size": "medium", "alt": null },
+                { "id": 24, "desc": "Large group marching in central Marvdasht after a protester's death", "coords": [29.878723, 52.806776], "link": "https://x.com/Shayan86/status/2007170005486711268", "date": "2026-01-02", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2007104961411522690" },
+                { "id": 25, "desc": "Protesters chant \"death to the dictator\" on Khayyam Boulevard, Qazvin", "coords": [36.280625, 50.009936], "link": "https://x.com/Shayan86/status/2007176433966465290", "date": "2026-01-02", "size": "medium", "alt": null },
+                { "id": 26, "desc": "Protesters chant \"death to the dictator\" in Nazi Abad, south Tehran", "coords": [35.6379206, 51.4049812], "link": "https://x.com/Shayan86/status/2007179679569264953", "date": "2026-01-02", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2007177746196369773, https://x.com/GhonchehAzad/status/2007490386294677543" },
+                { "id": 27, "desc": "Large group chanting for Pahlavi dynasty return on Khayyam Boulevard, Qazvin", "coords": [36.277281, 50.009420], "link": "https://x.com/Shayan86/status/2007187120134431022", "date": "2026-01-02", "size": "big", "alt": null },
+                { "id": 28, "desc": "Group gathering on Tohid Boulevard, Qom", "coords": [34.6440083, 50.8613519], "link": "https://x.com/Shayan86/status/2007214603500171285", "date": "2026-01-02", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007130858772427133" },
+                { "id": 29, "desc": "Banner of Qasem Soleimani set on fire near Zayande Rud river, Isfahan", "coords": [32.6436558, 51.6715999], "link": "https://x.com/Shayan86/status/2007343595926499504", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": 30, "desc": "Group chanting \"long live the Shah\" in Tehranpars, east Tehran", "coords": [35.742378, 51.534020], "link": "https://x.com/Shayan86/status/2007345605467926884", "date": "2026-01-03", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007231019070697694, https://x.com/GhonchehAzad/status/2007527025733751180" },
+                { "id": 31, "desc": "Group chanting \"death to the entire regime\" near Haft Hoz Square, Narmak, east Tehran", "coords": [35.728287, 51.493069], "link": "https://x.com/Shayan86/status/2007404687960768811", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": 32, "desc": "Group gathered in Kazerun, southern Fars Province", "coords": [29.6193901, 51.6542880], "link": "https://x.com/GhonchehAzad/status/2007387252855583080", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": 33, "desc": "Woman holding sign \"I’m not a rioter\" in Tehran", "coords": [35.63914, 51.41092], "link": "https://x.com/GhonchehAzad/status/2007497902902636989", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": 34, "desc": "Group chanting “Death to Khamenei” in Ilam, western Iran", "coords": [33.6368095, 46.4218413], "link": "https://x.com/GhonchehAzad/status/2007488952362742103", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": 35, "desc": "Protesters gathered in front of Charsou, Tehran", "coords": [35.69444, 51.41157], "link": "https://x.com/GhonchehAzad/status/2007820355914932569", "date": "2026-01-04", "size": "medium", "alt": null },
+                { "id": 36, "desc": "Security officers shooting in western Ilam Province (towards a hospital)", "coords": [33.6368095, 46.4218413], "link": "https://x.com/GhonchehAzad/status/2007917698450423879", "date": "2026-01-04", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007919876661502077" },
+                { "id": 37, "desc": "Protesters attacking and clashing with security forces in Marlik, Malard, Tehran Province", "coords": [35.69949, 50.98223], "link": "https://x.com/GeoConfirmed/status/2006767204038049828", "date": "2026-01-01", "size": "medium", "alt": "https://x.com/mhmiranusa/status/2006583893114204439" },
+                { "id": 38, "desc": "Security forces firing at protesters outside government complex in Arkavaz, Malekshahi County, Ilam Province (reported 4-8 killed, 30+ injured)", "coords": [33.39237, 46.59871], "link": "https://x.com/Mitch_Ulrich/status/2007667072223064529", "date": "2026-01-04", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2007883928263417878" },
+                { "id": 39, "desc": "Clashes with security forces at Imam Hussein Square in Shazand, Markazi Province", "coords": [33.93184, 49.40307], "link": "https://x.com/Mitch_Ulrich/status/2007945788392124873", "date": "2026-01-04", "size": "medium", "alt": null },
+                { "id": 40, "desc": "Protests with fires and chants against Khamenei in Fuladshahr, Isfahan Province", "coords": [32.482246, 51.404348], "link": "https://x.com/GeoConfirmed/status/2006392706881253489", "date": "2025-12-31", "size": "medium", "alt": null }
+            ];
+
+            const incidents = useMemo(() => rawIncidents.map(i => ({
+                ...i,
+                link: i.link.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, ''),
+                alt: i.alt ? i.alt.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, '').split(',')[0].trim() : null
+            })), []);
+
+            // --- Timeline Data ---
+            const { uniqueDates, minDate, maxDate } = useMemo(() => {
+                const dates = [...new Set(incidents.map(i => i.date))].sort();
+                return { uniqueDates: dates, minDate: dates[0], maxDate: dates[dates.length - 1] };
+            }, [incidents]);
+
+            // Filter logic
+            const displayedIncidents = useMemo(() => {
+                if (!dateFilter) return incidents;
+                return incidents.filter(i => i.date === dateFilter);
+            }, [incidents, dateFilter]);
+
+            // Playback logic
+            useEffect(() => {
+                let interval;
+                if (isPlaying && uniqueDates.length > 0) {
+                    interval = setInterval(() => {
+                        setDateFilter(currentDate => {
+                            if (!currentDate) return uniqueDates[0];
+                            const currentIndex = uniqueDates.indexOf(currentDate);
+                            if (currentIndex < uniqueDates.length - 1) {
+                                return uniqueDates[currentIndex + 1];
+                            } else {
+                                setIsPlaying(false);
+                                return currentDate;
+                            }
+                        });
+                    }, 1500); // 1.5s per day for better readability
+                }
+                return () => clearInterval(interval);
+            }, [isPlaying, uniqueDates]);
+
+            // --- Configuration ---
+            const layers = {
+                light: { name: 'Light', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png' },
+                dark: { name: 'Dark', url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' },
+                satellite: { name: 'Satellite', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' }
+            };
+
+            // --- Map Initialization ---
+            useEffect(() => {
+                if (!mapContainerRef.current || mapInstanceRef.current) return;
+                if (!window.L) {
+                    const checkL = setInterval(() => { if (window.L) { clearInterval(checkL); setIsMapReady(true); } }, 100);
+                    return;
+                } else { setIsMapReady(true); }
+
+                const L = window.L;
+                const iranCenter = [32.4279, 53.6880];
+                const iranBounds = [[24.5, 43.5], [40.0, 64.0]];
+
+                const map = L.map(mapContainerRef.current, {
+                    center: iranCenter,
+                    zoom: 5,
+                    minZoom: 5,
+                    maxZoom: 18,
+                    zoomControl: false,
+                    maxBounds: iranBounds,
+                    maxBoundsViscosity: 1.0,
+                });
+
+                tileLayerRef.current = L.tileLayer(layers.light.url, { subdomains: 'abcd', maxZoom: 20 }).addTo(map);
+                mapInstanceRef.current = map;
+                map.on('zoomend', () => setZoomLevel(map.getZoom()));
+                setTimeout(() => map.invalidateSize(), 100);
+            }, [isMapReady]);
+
+            // --- Handle Markers ---
+            useEffect(() => {
+                if (!mapInstanceRef.current || !window.L) return;
+                const L = window.L;
+                const map = mapInstanceRef.current;
+
+                markersRef.current.forEach(marker => marker.remove());
+                markersRef.current = [];
+
+                const getColor = (size) => {
+                    switch (size) {
+                        case 'big': return '#EF4444';
+                        case 'medium': return '#F97316';
+                        default: return '#FACC15'; 
+                    }
+                };
+                const getScale = (size) => {
+                    switch (size) {
+                        case 'big': return 48;
+                        case 'medium': return 40;
+                        default: return 32;
+                    }
+                };
+
+                displayedIncidents.forEach(incident => {
+                    const color = getColor(incident.size);
+                    const iconSize = getScale(incident.size);
+                    const iconHtml = `
+                        <div class="relative group flex items-center justify-center transition-transform hover:scale-110 duration-200" style="width: ${iconSize}px; height: ${iconSize}px;">
+                            <svg width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="${color}" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2)); display: block; opacity: 0.8;">
+                                <circle cx="12" cy="12" r="10" />
+                            </svg>
+                        </div>
+                    `;
+                    const customIcon = L.divIcon({
+                        html: iconHtml,
+                        className: 'bg-transparent border-none',
+                        iconSize: [iconSize, iconSize],
+                        iconAnchor: [iconSize / 2, iconSize],
+                        popupAnchor: [0, -iconSize]
+                    });
+
+                    const marker = L.marker(incident.coords, { icon: customIcon })
+                        .addTo(map)
+                        .bindTooltip(`
+                            <div class="font-sans text-sm font-semibold px-1">
+                                <div>
+                                    ${incident.desc}
+                                </div>
+                                <div class="text-xs text-gray-500 font-normal mt-1 opacity-70">Click for more info</div>
+                            </div>
+                        `, { direction: 'top', offset: [0, -iconSize + 5], opacity: 0.95, className: 'custom-tooltip' });
+
+                    marker.on('click', () => {
+                        setSelectedIncident(incident);
+                        // Smart Centering: Project latlng to point, shift point to the right, unproject back to latlng
+                        const currentZoom = map.getZoom();
+                        const targetZoom = Math.max(currentZoom, 10); // Maintain zoom or go to 10 minimum
+                        
+                        // 1. Project current marker location
+                        const point = map.project(incident.coords, targetZoom);
+                        
+                        // 2. Calculate shift. We want the marker to be on the left side.
+                        // So the map center needs to be to the RIGHT of the marker.
+                        // Shift amount = 25% of map width (screen width / 4)
+                        const mapWidth = map.getSize().x;
+                        const shiftX = mapWidth * 0.25; 
+                        
+                        // 3. New Center Point
+                        const newCenterPoint = L.point(point.x + shiftX, point.y);
+                        const newCenterLatLng = map.unproject(newCenterPoint, targetZoom);
+
+                        map.flyTo(newCenterLatLng, targetZoom, { duration: 1.5 });
+                    });
+
+                    markersRef.current.push(marker);
+                });
+            }, [isMapReady, displayedIncidents]);
+
+            // --- Handle Layer Switching ---
+            useEffect(() => {
+                if (!mapInstanceRef.current || !window.L) return;
+                if (tileLayerRef.current) mapInstanceRef.current.removeLayer(tileLayerRef.current);
+                tileLayerRef.current = window.L.tileLayer(layers[activeLayer].url, { subdomains: 'abcd', maxZoom: 20 }).addTo(mapInstanceRef.current);
+            }, [activeLayer]);
+
+            // --- Helpers ---
+            const handleZoomIn = () => mapInstanceRef.current?.zoomIn();
+            const handleZoomOut = () => mapInstanceRef.current?.zoomOut();
+            const closeModal = () => setSelectedIncident(null);
+
+            const toggleTheme = () => {
+                if (activeLayer === 'light') setActiveLayer('dark');
+                else setActiveLayer('light');
+            };
+            const toggleSatellite = () => {
+                if (activeLayer === 'satellite') setActiveLayer('light');
+                else setActiveLayer('satellite');
+            };
+
+            // Reset Map View & Close Panels
+            const resetView = () => {
+                if (mapInstanceRef.current) {
+                    // Coordinates for Center of Iran and Zoom 5
+                    mapInstanceRef.current.flyTo([32.4279, 53.6880], 5, { duration: 1.5 });
+                    setSelectedIncident(null);
+                    setShowGraph(false);
+                }
+            };
+
+            const glassClass = isDarkMode ? "bg-gray-900/60 border-gray-700/50 text-white" : "bg-white/60 border-white/40 text-gray-700";
+            const glassHover = isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80";
+
+            return (
+                <div className="relative w-full h-screen bg-gray-100 overflow-hidden font-sans">
+                    
+                    <div ref={mapContainerRef} className="absolute inset-0 z-0 bg-slate-200" />
+
+                    {/* Header */}
+                    <div className="absolute top-6 left-6 z-[1000] select-none max-w-[80vw] group">
+                        <h1 
+                            onClick={resetView}
+                            className={`text-3xl md:text-4xl font-extrabold tracking-tight drop-shadow-lg transition-all duration-300 cursor-pointer active:scale-95 group-hover:opacity-80 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                            title="Reset Map View"
+                        >
+                            Iran Protest Map
+                        </h1>
+                        <p className={`text-sm font-medium mt-1 drop-shadow-md transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-600'}`}>
+                            Live Incident Tracker • {displayedIncidents.length} Events Visible
+                        </p>
+                    </div>
+
+                    {/* Top Right Controls */}
+                    <div className="absolute top-6 right-6 z-[1000] flex flex-col items-end space-y-3">
+                        <div className={`backdrop-blur-xl shadow-xl rounded-full p-1.5 border flex items-center space-x-2 transition-colors duration-300 ${glassClass}`}>
+                            <button onClick={toggleTheme} className={`p-2.5 rounded-full transition-all duration-200 ${glassHover}`} title="Toggle Light/Dark">
+                                {activeLayer === 'light' ? <IconSun /> : <IconMoon />}
+                            </button>
+                            <button onClick={toggleSatellite} className={`p-2.5 rounded-full transition-all duration-200 text-lg leading-none ${activeLayer === 'satellite' ? 'bg-blue-600/80 text-white' : glassHover}`} title="Satellite View">
+                                🛰️
+                            </button>
+                        </div>
+
+                        <button 
+                            onClick={() => setShowGraph(true)} 
+                            className={`backdrop-blur-xl shadow-xl rounded-full px-4 py-2 border flex items-center space-x-2 text-sm font-semibold transition-all duration-200 ${glassClass} ${glassHover}`}
+                        >
+                            <IconChart size={16} />
+                            <span>Show Chart</span>
+                        </button>
+                        
+                        <div className={`backdrop-blur-xl shadow-xl rounded-full p-1.5 border flex flex-col space-y-1 ${glassClass}`}>
+                            <button onClick={handleZoomIn} className={`p-2 rounded-full transition-colors ${glassHover}`}><IconZoomIn /></button>
+                            <button onClick={handleZoomOut} className={`p-2 rounded-full transition-colors ${glassHover}`}><IconZoomOut /></button>
+                        </div>
+                    </div>
+
+                    {/* Timeline Slider (Bottom Center) */}
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-xl px-4">
+                         <div className={`backdrop-blur-xl shadow-2xl rounded-2xl p-4 border flex flex-col space-y-3 transition-colors duration-300 ${glassClass}`}>
+                            <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wide opacity-90">
+                                <span>Timeline Control</span>
+                                <span>{dateFilter || "Showing All Events"}</span>
+                            </div>
+                            
+                            <div className="flex items-center space-x-4">
+                                <button 
+                                    onClick={() => setIsPlaying(!isPlaying)}
+                                    className={`p-2 rounded-full transition-colors ${isPlaying ? 'bg-red-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                                    title={isPlaying ? "Pause" : "Play Timeline"}
+                                >
+                                    {isPlaying ? <IconPause size={16} /> : <IconPlay size={16} />}
+                                </button>
+
+                                <div className="flex-1 relative flex items-center">
+                                    <input 
+                                        type="range" 
+                                        min="0" 
+                                        max={uniqueDates.length - 1} 
+                                        value={dateFilter ? uniqueDates.indexOf(dateFilter) : 0} 
+                                        onChange={(e) => {
+                                            setIsPlaying(false); // Stop playing if user drags
+                                            setDateFilter(uniqueDates[e.target.value]);
+                                        }}
+                                        disabled={!dateFilter && isPlaying}
+                                        className="w-full h-2 bg-gray-200/50 rounded-lg appearance-none cursor-pointer accent-blue-600 z-10"
+                                    />
+                                    {/* Visual Track Background */}
+                                    <div className="absolute inset-0 h-2 bg-gray-300/30 rounded-lg -z-0 pointer-events-none"></div>
+                                </div>
+
+                                <button 
+                                    onClick={() => { setIsPlaying(false); setDateFilter(null); }} 
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors border ${!dateFilter ? 'bg-blue-600 border-blue-600 text-white' : 'border-current opacity-60 hover:opacity-100 hover:bg-current hover:text-white hover:bg-opacity-10'}`}
+                                >
+                                    All
+                                </button>
+                            </div>
+                         </div>
+                    </div>
+
+                    {/* Graph Modal */}
+                    {showGraph && <ProtestGraph data={incidents} onClose={() => setShowGraph(false)} isDarkMode={isDarkMode} />}
+
+                    {/* Details Panel */}
+                    {selectedIncident && (
+                        <div className="absolute inset-0 z-[2000] flex justify-end pointer-events-none">
+                            <div className={`relative w-full max-w-md h-full backdrop-blur-xl shadow-2xl border-l overflow-y-auto flex flex-col animate-slide-in-right no-scrollbar pointer-events-auto ${isDarkMode ? 'bg-gray-900/80 border-gray-700/50' : 'bg-white/80 border-white/50'}`}>
+                                <div className={`sticky top-0 z-10 px-6 py-4 border-b flex justify-between items-start backdrop-blur-md ${isDarkMode ? 'bg-gray-900/60 border-gray-800' : 'bg-white/60 border-gray-100'}`}>
+                                    <div>
+                                        <h2 className={`text-xl font-bold leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Incident Details</h2>
+                                    </div>
+                                    <button onClick={closeModal} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                                        <IconX size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="p-6 space-y-6">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50/50 border-gray-100'}`}>
+                                            <div className="flex items-center text-gray-500 mb-1 text-xs uppercase tracking-wide font-bold"><IconCalendar size={12} className="mr-1.5" /> Date</div>
+                                            <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{selectedIncident.date}</div>
+                                            <div className="mt-1 text-[10px] text-gray-400 italic leading-tight">Date reflects tweet date.</div>
+                                        </div>
+                                        <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50/50 border-gray-100'}`}>
+                                            <div className="flex items-center text-gray-500 mb-1 text-xs uppercase tracking-wide font-bold"><IconMapPin size={12} className="mr-1.5" /> Location</div>
+                                            <div className={`font-mono text-sm font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                                {selectedIncident.coords[0].toFixed(3)}, {selectedIncident.coords[1].toFixed(3)}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className={`text-sm font-bold uppercase tracking-wide mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Description</h3>
+                                        <p className={`leading-relaxed p-4 rounded-xl border ${isDarkMode ? 'bg-blue-900/10 border-blue-800 text-gray-300' : 'bg-blue-50/30 border-blue-100 text-gray-700'}`}>
+                                            {selectedIncident.desc}
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <h3 className={`text-sm font-bold uppercase tracking-wide ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Footage</h3>
+                                                <a href={selectedIncident.link} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline flex items-center">View on X <IconExternalLink size={10} className="ml-1" /></a>
+                                            </div>
+                                            <TweetEmbed url={selectedIncident.link} />
+                                        </div>
+                                        {selectedIncident.alt && (
+                                            <div>
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <h3 className={`text-sm font-bold uppercase tracking-wide ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Alt Angle</h3>
+                                                    <a href={selectedIncident.alt} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline flex items-center">View on X <IconExternalLink size={10} className="ml-1" /></a>
+                                                </div>
+                                                <TweetEmbed url={selectedIncident.alt} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<IranMap />);
+    </script>
+</body>
+</html>
