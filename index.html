@@ -468,24 +468,8 @@
 
                     marker.on('click', () => {
                         setSelectedIncident(incident);
-                        // Smart Centering: Project latlng to point, shift point to the right, unproject back to latlng
-                        const currentZoom = map.getZoom();
-                        const targetZoom = Math.max(currentZoom, 10); // Maintain zoom or go to 10 minimum
-                        
-                        // 1. Project current marker location
-                        const point = map.project(incident.coords, targetZoom);
-                        
-                        // 2. Calculate shift. We want the marker to be on the left side.
-                        // So the map center needs to be to the RIGHT of the marker.
-                        // Shift amount = 25% of map width (screen width / 4)
-                        const mapWidth = map.getSize().x;
-                        const shiftX = mapWidth * 0.25; 
-                        
-                        // 3. New Center Point
-                        const newCenterPoint = L.point(point.x + shiftX, point.y);
-                        const newCenterLatLng = map.unproject(newCenterPoint, targetZoom);
-
-                        map.flyTo(newCenterLatLng, targetZoom, { duration: 1.5 });
+                        // Reverted to standard centering
+                        map.flyTo(incident.coords, 14, { duration: 1.5 });
                     });
 
                     markersRef.current.push(marker);
