@@ -527,6 +527,22 @@
                         <p className={`text-sm font-medium mt-1 drop-shadow-md transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-600'}`}>
                             Live Incident Tracker • {displayedIncidents.length} Events Visible
                         </p>
+                        
+                        {/* Legend */}
+                        <div className={`mt-3 flex flex-col space-y-1.5 transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-600'}`}>
+                            <div className="flex items-center text-xs font-medium drop-shadow-md">
+                                <span className="w-2.5 h-2.5 rounded-full bg-red-500 mr-2 shadow-sm"></span>
+                                Large Crowd
+                            </div>
+                            <div className="flex items-center text-xs font-medium drop-shadow-md">
+                                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 mr-2 shadow-sm"></span>
+                                Medium Crowd
+                            </div>
+                            <div className="flex items-center text-xs font-medium drop-shadow-md">
+                                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 mr-2 shadow-sm"></span>
+                                Small Group
+                            </div>
+                        </div>
                     </div>
 
                     {/* Top Right Controls */}
