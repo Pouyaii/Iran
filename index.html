@@ -157,8 +157,83 @@
         const IconPlay = ({ size = 16 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
         const IconPause = ({ size = 16 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>;
 
+        const translations = {
+            en: {
+                pageTitle: "Iran Protest Map",
+                mapTitle: "Iran Protest Map",
+                subtitle: (count) => `Live Incident Tracker • ${count} Events Visible`,
+                legendLarge: "Large Crowd",
+                legendMedium: "Medium Crowd",
+                legendSmall: "Small Group",
+                toggleTheme: "Toggle Light/Dark",
+                satelliteView: "Satellite View",
+                toggleLanguage: "Switch to Farsi",
+                toggleLanguageEn: "Switch to English",
+                showChart: "Show Chart",
+                timelineControl: "Timeline Control",
+                showingAll: "Showing All Events",
+                all: "All",
+                playTimeline: "Play Timeline",
+                pauseTimeline: "Pause Timeline",
+                incidentDetails: "Incident Details",
+                date: "Date",
+                dateNote: "Date reflects tweet date.",
+                location: "Location",
+                description: "Description",
+                footage: "Footage",
+                altAngle: "Alt Angle",
+                viewOnX: "View on X",
+                tooltipMoreInfo: "Click for more info",
+                loadingTweet: "Loading Tweet...",
+                graphTitle: "Protest Activity Over Time",
+                graphNote: "Note: Date reflects date of tweet, not necessarily the date of the incident.",
+                total: "Total",
+                large: "Large",
+                medium: "Medium",
+                small: "Small",
+                resetMapView: "Reset Map View",
+                timelineLabel: (dateFilter) => dateFilter || "Showing All Events",
+            },
+            fa: {
+                pageTitle: "نقشه اعتراضات ایران",
+                mapTitle: "نقشه اعتراضات ایران",
+                subtitle: (count) => `ردیاب لحظه‌ای رویدادها • ${count} رویداد قابل مشاهده`,
+                legendLarge: "جمعیت زیاد",
+                legendMedium: "جمعیت متوسط",
+                legendSmall: "گروه کوچک",
+                toggleTheme: "تغییر حالت روشن/تاریک",
+                satelliteView: "نمای ماهواره‌ای",
+                toggleLanguage: "تغییر به فارسی",
+                toggleLanguageEn: "تغییر به انگلیسی",
+                showChart: "نمایش نمودار",
+                timelineControl: "کنترل خط زمانی",
+                showingAll: "نمایش همه رویدادها",
+                all: "همه",
+                playTimeline: "پخش خط زمانی",
+                pauseTimeline: "توقف خط زمانی",
+                incidentDetails: "جزئیات رویداد",
+                date: "تاریخ",
+                dateNote: "تاریخ بر اساس زمان توییت است.",
+                location: "موقعیت",
+                description: "توضیحات",
+                footage: "ویدیو",
+                altAngle: "زاویه دیگر",
+                viewOnX: "مشاهده در ایکس",
+                tooltipMoreInfo: "برای اطلاعات بیشتر کلیک کنید",
+                loadingTweet: "در حال بارگذاری توییت...",
+                graphTitle: "فعالیت اعتراضات در طول زمان",
+                graphNote: "توجه: تاریخ بر اساس زمان توییت است و لزوماً تاریخ رویداد نیست.",
+                total: "کل",
+                large: "زیاد",
+                medium: "متوسط",
+                small: "کم",
+                resetMapView: "بازنشانی نمای نقشه",
+                timelineLabel: (dateFilter) => dateFilter || "نمایش همه رویدادها",
+            }
+        };
+
         // --- Tweet Component ---
-        const TweetEmbed = ({ url }) => {
+        const TweetEmbed = ({ url, loadingText }) => {
             const containerRef = useRef(null);
 
             useEffect(() => {
@@ -191,13 +266,14 @@
 
             return (
                 <div ref={containerRef} className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 min-h-[150px] flex items-center justify-center">
-                   <div className="animate-pulse p-4 w-full flex justify-center text-gray-400 text-sm">Loading Tweet...</div>
+                   <div className="animate-pulse p-4 w-full flex justify-center text-gray-400 text-sm">{loadingText}</div>
                 </div>
             );
         };
 
         // --- Graph Component (Custom SVG) ---
-        const ProtestGraph = ({ data, onClose, isDarkMode }) => {
+        const ProtestGraph = ({ data, onClose, isDarkMode, translations, isRTL }) => {
+            const t = translations;
             const processedData = useMemo(() => {
                 const dates = [...new Set(data.map(d => d.date))].sort();
                 const series = dates.map(date => {
@@ -240,8 +316,8 @@
                      <div className={`relative ${bgColor} backdrop-blur-xl border shadow-2xl rounded-2xl p-6 w-full max-w-2xl animate-fade-in`}>
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Protest Activity Over Time</h2>
-                                <p className="text-xs text-gray-400 italic mt-1">Note: Date reflects date of tweet, not necessarily the date of the incident.</p>
+                                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isRTL ? 'text-right' : 'text-left'}`}>{t.graphTitle}</h2>
+                                <p className={`text-xs text-gray-400 italic mt-1 ${isRTL ? 'text-right' : 'text-left'}`}>{t.graphNote}</p>
                             </div>
                             <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
                                 <IconX />
@@ -267,10 +343,10 @@
                         </div>
 
                         <div className="flex justify-center space-x-4 mt-6 text-xs font-medium">
-                            <div className="flex items-center"><span className="w-3 h-1 bg-blue-400 rounded mr-2"></span><span className={textColor}>Total</span></div>
-                            <div className="flex items-center"><span className="w-3 h-1 bg-red-500 rounded mr-2 border border-dashed border-white"></span><span className={textColor}>Large</span></div>
-                            <div className="flex items-center"><span className="w-3 h-1 bg-orange-500 rounded mr-2 border border-dotted border-white"></span><span className={textColor}>Medium</span></div>
-                            <div className="flex items-center"><span className="w-3 h-1 bg-yellow-400 rounded mr-2"></span><span className={textColor}>Small</span></div>
+                            <div className="flex items-center"><span className="w-3 h-1 bg-blue-400 rounded mr-2"></span><span className={textColor}>{t.total}</span></div>
+                            <div className="flex items-center"><span className="w-3 h-1 bg-red-500 rounded mr-2 border border-dashed border-white"></span><span className={textColor}>{t.large}</span></div>
+                            <div className="flex items-center"><span className="w-3 h-1 bg-orange-500 rounded mr-2 border border-dotted border-white"></span><span className={textColor}>{t.medium}</span></div>
+                            <div className="flex items-center"><span className="w-3 h-1 bg-yellow-400 rounded mr-2"></span><span className={textColor}>{t.small}</span></div>
                         </div>
                      </div>
                 </div>
@@ -290,7 +366,10 @@
             const [showGraph, setShowGraph] = useState(false);
             const [dateFilter, setDateFilter] = useState(null); // null = All
             const [isPlaying, setIsPlaying] = useState(false);
+            const [language, setLanguage] = useState('en');
 
+            const t = translations[language];
+            const isRTL = language === 'fa';
             const isDarkMode = activeLayer === 'dark' || activeLayer === 'satellite';
 
             // Sync Dark Mode with Body for Tooltip CSS
@@ -298,55 +377,63 @@
                 document.body.classList.toggle('dark-theme', isDarkMode);
             }, [isDarkMode]);
 
+            // Sync language direction and metadata
+            useEffect(() => {
+                document.documentElement.lang = language;
+                document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+                document.title = t.pageTitle;
+            }, [language, isRTL, t]);
+
             // --- Data ---
             const rawIncidents = [
-                { "id": 1, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "coords": [35.6927461, 51.4255329], "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null },
-                { "id": 2, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "coords": [26.968793, 56.075395], "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null },
-                { "id": 3, "desc": "Group gathered in Tehran", "coords": [35.752619, 51.466106], "link": "https://x.com/GhonchehAzad/status/2005992119258038527", "date": "2025-12-30", "size": "big", "alt": null },
-                { "id": 4, "desc": "Protester sits down in front of forces outside Charsou shopping centre on Jomhouri Street, Tehran", "coords": [35.695143, 51.412703], "link": "https://x.com/Shayan86/status/2006018573769019635", "date": "2025-12-30", "size": "small", "alt": null },
-                { "id": 5, "desc": "Unrest with students running at University of Tehran", "coords": [35.7036777, 51.3956859], "link": "https://x.com/GhonchehAzad/status/2006018665456501147", "date": "2025-12-30", "size": "medium", "alt": "https://x.com/Shayan86/status/2006039256603513166" },
-                { "id": 6, "desc": "Woman leads chants of \"don't be afraid, we're all together\" in Tehran's Grand Bazaar", "coords": [35.6727692, 51.4214139], "link": "https://x.com/Shayan86/status/2006051668295647391", "date": "2025-12-30", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006036269298512269" },
-                { "id": 7, "desc": "Clashes between police and protesters in Hamedan", "coords": [34.7954883, 48.5143633], "link": "https://x.com/GhonchehAzad/status/2006077897610797143", "date": "2025-12-30", "size": "medium", "alt": "https://x.com/Shayan86/status/2006728257450946936" },
-                { "id": 8, "desc": "Man calls for help as protesters run from forces on Rajaei Street, Arak", "coords": [34.084962, 49.691045], "link": "https://x.com/Shayan86/status/2006174541567898093", "date": "2025-12-31", "size": "small", "alt": null },
-                { "id": 9, "desc": "Shots fired at protesters on Imam Khomeini Street, Fasa", "coords": [28.939864, 53.647716], "link": "https://x.com/Shayan86/status/2006332899751301458", "date": "2025-12-31", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2006331110993883448" },
-                { "id": 10, "desc": "Protesters remove entrance gate of local government building in Fasa", "coords": [28.940212, 53.648819], "link": "https://x.com/Shayan86/status/2006412023597355302", "date": "2025-12-31", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006319069432012957" },
-                { "id": 11, "desc": "Shots fired towards protesters at Imam Khomeini Square, Kuhdasht", "coords": [33.533535, 47.607890], "link": "https://x.com/Shayan86/status/2006418603029987588", "date": "2025-12-31", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006403148684943839" },
-                { "id": 12, "desc": "Protesters in Ramhormoz", "coords": [31.2800698, 49.6083711], "link": "https://x.com/GhonchehAzad/status/2006472230344220830", "date": "2025-12-31", "size": "medium", "alt": null },
-                { "id": 13, "desc": "At least one individual arrested in front of Shahid Beheshti University dormitory, Tehran", "coords": [35.8059661, 51.3938244], "link": "https://x.com/GhonchehAzad/status/2006484693064270278", "date": "2025-12-31", "size": "small", "alt": null },
-                { "id": 14, "desc": "Protesters set fire to local police station in Azna", "coords": [33.460733, 49.451621], "link": "https://x.com/Shayan86/status/2006850300645355614", "date": "2026-01-01", "size": "small", "alt": null },
-                { "id": 15, "desc": "Chants of \"don't be afraid, we're all together\" in Karaj", "coords": [35.842676, 50.971310], "link": "https://x.com/Shayan86/status/2006867020508430504", "date": "2026-01-01", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006811169957585230" },
-                { "id": 16, "desc": "Protesters pelt stones at bike-riding security forces on Del Azad Boulevard, Qom", "coords": [34.635653, 50.903530], "link": "https://x.com/Shayan86/status/2006883608489803839", "date": "2026-01-02", "size": "medium", "alt": null },
-                { "id": 17, "desc": "Protesters chant \"freedom, freedom, freedom\" on Maliabad Boulevard, Shiraz", "coords": [29.6813125, 52.4621809], "link": "https://x.com/Shayan86/status/2007140469575463141", "date": "2026-01-02", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2006840481955852628" },
-                { "id": 18, "desc": "Protesters march chanting in support of Pahlavi dynasty in central Marvdasht", "coords": [29.874124, 52.800150], "link": "https://x.com/Shayan86/status/2007143719263420764", "date": "2026-01-02", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2006729302105104558" },
-                { "id": 19, "desc": "Group gathers outside government-linked building with explosion heard in Lordegan", "coords": [31.519264, 50.824531], "link": "https://x.com/Shayan86/status/2007145981104795668", "date": "2026-01-02", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006726390729814444" },
-                { "id": 20, "desc": "Protesters chant \"people of Iran, scream and shout for your rights\" on Shariati Street, Babol", "coords": [36.565107, 52.678999], "link": "https://x.com/Shayan86/status/2007155657775227083", "date": "2026-01-02", "size": "medium", "alt": null },
-                { "id": 21, "desc": "Protesters march down Shariati Street in Babol", "coords": [36.566730, 52.678719], "link": "https://x.com/Shayan86/status/2007174357404266769", "date": "2026-01-02", "size": "medium", "alt": null },
-                { "id": 22, "desc": "Security forces detain a young woman near Haft Hoz Square, east Tehran", "coords": [35.731604, 51.494020], "link": "https://x.com/Shayan86/status/2007158833781637299", "date": "2026-01-02", "size": "small", "alt": null },
-                { "id": 23, "desc": "Protesters outside police station with gunshots heard in Marvdasht", "coords": [29.880899, 52.808695], "link": "https://x.com/Shayan86/status/2007166728086925314", "date": "2026-01-02", "size": "medium", "alt": null },
-                { "id": 24, "desc": "Large group marching in central Marvdasht after a protester's death", "coords": [29.878723, 52.806776], "link": "https://x.com/Shayan86/status/2007170005486711268", "date": "2026-01-02", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2007104961411522690" },
-                { "id": 25, "desc": "Protesters chant \"death to the dictator\" on Khayyam Boulevard, Qazvin", "coords": [36.280625, 50.009936], "link": "https://x.com/Shayan86/status/2007176433966465290", "date": "2026-01-02", "size": "medium", "alt": null },
-                { "id": 26, "desc": "Protesters chant \"death to the dictator\" in Nazi Abad, south Tehran", "coords": [35.6379206, 51.4049812], "link": "https://x.com/Shayan86/status/2007179679569264953", "date": "2026-01-02", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2007177746196369773, https://x.com/GhonchehAzad/status/2007490386294677543" },
-                { "id": 27, "desc": "Large group chanting for Pahlavi dynasty return on Khayyam Boulevard, Qazvin", "coords": [36.277281, 50.009420], "link": "https://x.com/Shayan86/status/2007187120134431022", "date": "2026-01-02", "size": "big", "alt": null },
-                { "id": 28, "desc": "Group gathering on Tohid Boulevard, Qom", "coords": [34.6440083, 50.8613519], "link": "https://x.com/Shayan86/status/2007214603500171285", "date": "2026-01-02", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007130858772427133" },
-                { "id": 29, "desc": "Banner of Qasem Soleimani set on fire near Zayande Rud river, Isfahan", "coords": [32.6436558, 51.6715999], "link": "https://x.com/Shayan86/status/2007343595926499504", "date": "2026-01-03", "size": "small", "alt": null },
-                { "id": 30, "desc": "Group chanting \"long live the Shah\" in Tehranpars, east Tehran", "coords": [35.742378, 51.534020], "link": "https://x.com/Shayan86/status/2007345605467926884", "date": "2026-01-03", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007231019070697694, https://x.com/GhonchehAzad/status/2007527025733751180" },
-                { "id": 31, "desc": "Group chanting \"death to the entire regime\" near Haft Hoz Square, Narmak, east Tehran", "coords": [35.728287, 51.493069], "link": "https://x.com/Shayan86/status/2007404687960768811", "date": "2026-01-03", "size": "medium", "alt": null },
-                { "id": 32, "desc": "Group gathered in Kazerun, southern Fars Province", "coords": [29.6193901, 51.6542880], "link": "https://x.com/GhonchehAzad/status/2007387252855583080", "date": "2026-01-03", "size": "medium", "alt": null },
-                { "id": 33, "desc": "Woman holding sign \"I’m not a rioter\" in Tehran", "coords": [35.63914, 51.41092], "link": "https://x.com/GhonchehAzad/status/2007497902902636989", "date": "2026-01-03", "size": "small", "alt": null },
-                { "id": 34, "desc": "Group chanting “Death to Khamenei” in Ilam, western Iran", "coords": [33.6368095, 46.4218413], "link": "https://x.com/GhonchehAzad/status/2007488952362742103", "date": "2026-01-03", "size": "small", "alt": null },
-                { "id": 35, "desc": "Protesters gathered in front of Charsou, Tehran", "coords": [35.69444, 51.41157], "link": "https://x.com/GhonchehAzad/status/2007820355914932569", "date": "2026-01-04", "size": "medium", "alt": null },
-                { "id": 36, "desc": "Security officers shooting in western Ilam Province (towards a hospital)", "coords": [33.6368095, 46.4218413], "link": "https://x.com/GhonchehAzad/status/2007917698450423879", "date": "2026-01-04", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007919876661502077" },
-                { "id": 37, "desc": "Protesters attacking and clashing with security forces in Marlik, Malard, Tehran Province", "coords": [35.69949, 50.98223], "link": "https://x.com/GeoConfirmed/status/2006767204038049828", "date": "2026-01-01", "size": "medium", "alt": "https://x.com/mhmiranusa/status/2006583893114204439" },
-                { "id": 38, "desc": "Security forces firing at protesters outside government complex in Arkavaz, Malekshahi County, Ilam Province (reported 4-8 killed, 30+ injured)", "coords": [33.39237, 46.59871], "link": "https://x.com/Mitch_Ulrich/status/2007667072223064529", "date": "2026-01-04", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2007883928263417878" },
-                { "id": 39, "desc": "Clashes with security forces at Imam Hussein Square in Shazand, Markazi Province", "coords": [33.93184, 49.40307], "link": "https://x.com/Mitch_Ulrich/status/2007945788392124873", "date": "2026-01-04", "size": "medium", "alt": null },
-                { "id": 40, "desc": "Protests with fires and chants against Khamenei in Fuladshahr, Isfahan Province", "coords": [32.482246, 51.404348], "link": "https://x.com/GeoConfirmed/status/2006392706881253489", "date": "2025-12-31", "size": "medium", "alt": null }
+                { id: 1, desc: { en: "Protesters push back police and security forces on Jomhouri Street, Tehran", fa: "معترضان نیروهای پلیس و امنیتی را در خیابان جمهوری تهران عقب می‌رانند" }, coords: [35.6927461, 51.4255329], link: "https://x.com/Shayan86/status/2005987583445090377", date: "2025-12-30", size: "big", alt: null },
+                { id: 2, desc: { en: "Protesters outside Ghasr shopping centre on Qeshm Island", fa: "معترضان بیرون مرکز خرید قصر در جزیره قشم" }, coords: [26.968793, 56.075395], link: "https://x.com/Shayan86/status/2005999164979867916", date: "2025-12-30", size: "medium", alt: null },
+                { id: 3, desc: { en: "Group gathered in Tehran", fa: "گروهی در تهران تجمع کرده‌اند" }, coords: [35.752619, 51.466106], link: "https://x.com/GhonchehAzad/status/2005992119258038527", date: "2025-12-30", size: "big", alt: null },
+                { id: 4, desc: { en: "Protester sits down in front of forces outside Charsou shopping centre on Jomhouri Street, Tehran", fa: "یک معترض مقابل نیروها در بیرون مرکز خرید چارسو در خیابان جمهوری تهران می‌نشیند" }, coords: [35.694113, 51.424026], link: "https://x.com/GhonchehAzad/status/2005996828725981263", date: "2025-12-30", size: "medium", alt: null },
+                { id: 5, desc: { en: "Protesters confront security forces around Taleghani Street, Tehran", fa: "معترضان در اطراف خیابان طالقانی تهران با نیروهای امنیتی درگیر می‌شوند" }, coords: [35.7059726, 51.4259982], link: "https://x.com/GhonchehAzad/status/2006031600903895232", date: "2025-12-30", size: "big", alt: "https://x.com/GhonchehAzad/status/2006034586118684950" },
+                { id: 6, desc: { en: "Protester shuts down Kasra Shopping Centre on Karim Khan Street, Tehran", fa: "یک معترض مرکز خرید کسری در خیابان کریم‌خان تهران را تعطیل می‌کند" }, coords: [35.712965, 51.423331], link: "https://x.com/GhonchehAzad/status/2006096102416160873", date: "2025-12-30", size: "small", alt: null },
+                { id: 7, desc: { en: "Protesters beat back security forces near Ferdowsi Square, Tehran", fa: "معترضان نیروهای امنیتی را نزدیک میدان فردوسی تهران عقب می‌زنند" }, coords: [35.700804, 51.417209], link: "https://x.com/Shayan86/status/2005905299287728410", date: "2025-12-30", size: "big", alt: "https://x.com/Shayan86/status/2006067081694652605" },
+                { id: 8, desc: { en: "Protesters set fire to Police SUV in Marvdasht", fa: "معترضان یک خودروی شاسی‌بلند پلیس را در مرودشت به آتش می‌کشند" }, coords: [29.8763692, 52.8137315], link: "https://x.com/GhonchehAzad/status/2006003917148887140", date: "2025-12-30", size: "big", alt: null },
+                { id: 9, desc: { en: "Guards chant slogans opposing the Supreme Leader in Mashhad", fa: "نیروهای گارد در مشهد شعارهایی علیه رهبر جمهوری اسلامی سر می‌دهند" }, coords: [36.276111, 59.606111], link: "https://x.com/GhonchehAzad/status/2006018771505117503", date: "2025-12-30", size: "small", alt: null },
+                { id: 10, desc: { en: "Protesters chant in support of Pahlavi dynasty in Mashhad", fa: "معترضان در مشهد شعارهایی در حمایت از دودمان پهلوی سر می‌دهند" }, coords: [36.276111, 59.606111], link: "https://x.com/GhonchehAzad/status/2006106166648568140", date: "2025-12-30", size: "medium", alt: "https://x.com/GhonchehAzad/status/2006165315777853927" },
+                { id: 11, desc: { en: "Protesters block road with fire in Babolsar", fa: "معترضان با آتش جاده‌ای را در بابلسر مسدود می‌کنند" }, coords: [36.712506, 52.655169], link: "https://x.com/GhonchehAzad/status/2006063120950577245", date: "2025-12-30", size: "small", alt: null },
+                { id: 12, desc: { en: "Protests, gunshots, fire in Abdanan", fa: "اعتراضات، تیراندازی و آتش‌سوزی در آبدانان" }, coords: [32.9918004, 47.4193223], link: "https://x.com/GeoConfirmed/status/2006355022500954177", date: "2025-12-31", size: "medium", alt: "https://x.com/Shayan86/status/2006562194619935164" },
+                { id: 13, desc: { en: "Protesters set fire to motorbike and motorbike cart in Ahvaz", fa: "معترضان موتورسیکلت و موتور سه‌چرخ را در اهواز آتش می‌زنند" }, coords: [31.3203, 48.6693], link: "https://x.com/Shayan86/status/2006539735986313464", date: "2025-12-31", size: "medium", alt: null },
+                { id: 14, desc: { en: "Large protest on Ferdowsi Street in Rasht", fa: "تجمع بزرگ اعتراضی در خیابان فردوسی رشت" }, coords: [37.2807697, 49.5892257], link: "https://x.com/Shayan86/status/2006543383830628437", date: "2025-12-31", size: "big", alt: null },
+                { id: 15, desc: { en: "Protesters block road with fires in Yazd", fa: "معترضان با آتش جاده‌ای را در یزد مسدود می‌کنند" }, coords: [31.898911, 54.356856], link: "https://x.com/Shayan86/status/2006618053421435316", date: "2025-12-31", size: "medium", alt: null },
+                { id: 16, desc: { en: "Group briefly blocks road with fire in Miandoab", fa: "گروهی برای مدتی کوتاه جاده‌ای را در میاندوآب با آتش می‌بندند" }, coords: [36.96695, 46.10676], link: "https://x.com/Shayan86/status/2006646304024916170", date: "2025-12-31", size: "small", alt: null },
+                { id: 17, desc: { en: "Protesters march chanting in Marvdasht", fa: "معترضان در مرودشت با شعار در حال راهپیمایی‌اند" }, coords: [29.6813125, 52.4621809], link: "https://x.com/Shayan86/status/2007140469575463141", date: "2026-01-02", size: "medium", alt: "https://x.com/GhonchehAzad/status/2006840481955852628" },
+                { id: 18, desc: { en: "Protesters march chanting in support of Pahlavi dynasty in central Marvdasht", fa: "معترضان در مرکز مرودشت با شعارهایی در حمایت از دودمان پهلوی راهپیمایی می‌کنند" }, coords: [29.874124, 52.800150], link: "https://x.com/Shayan86/status/2007143719263420764", date: "2026-01-02", size: "big", alt: "https://x.com/GhonchehAzad/status/2006729302105104558" },
+                { id: 19, desc: { en: "Group gathers outside government-linked building with explosion heard in Lordegan", fa: "گروهی بیرون یک ساختمان وابسته به دولت در لردگان تجمع کرده و صدای انفجار شنیده می‌شود" }, coords: [31.519264, 50.824531], link: "https://x.com/Shayan86/status/2007145981104795668", date: "2026-01-02", size: "small", alt: "https://x.com/GhonchehAzad/status/2006726390729814444" },
+                { id: 20, desc: { en: "Protesters chant \"people of Iran, scream and shout for your rights\" on Shariati Street, Babol", fa: "معترضان در خیابان شریعتی بابل شعار «مردم ایران، برای حقوقتان فریاد بزنید» سر می‌دهند" }, coords: [36.565107, 52.678999], link: "https://x.com/Shayan86/status/2007155657775227083", date: "2026-01-02", size: "medium", alt: null },
+                { id: 21, desc: { en: "Protesters march down Shariati Street in Babol", fa: "معترضان در خیابان شریعتی بابل راهپیمایی می‌کنند" }, coords: [36.566730, 52.678719], link: "https://x.com/Shayan86/status/2007174357404266769", date: "2026-01-02", size: "medium", alt: null },
+                { id: 22, desc: { en: "Security forces detain a young woman near Haft Hoz Square, east Tehran", fa: "نیروهای امنیتی یک زن جوان را نزدیک میدان هفت‌حوض در شرق تهران بازداشت می‌کنند" }, coords: [35.731604, 51.494020], link: "https://x.com/Shayan86/status/2007158833781637299", date: "2026-01-02", size: "small", alt: null },
+                { id: 23, desc: { en: "Protesters outside police station with gunshots heard in Marvdasht", fa: "معترضان بیرون کلانتری در مرودشت، همراه با صدای تیراندازی" }, coords: [29.880899, 52.808695], link: "https://x.com/Shayan86/status/2007166728086925314", date: "2026-01-02", size: "medium", alt: null },
+                { id: 24, desc: { en: "Large group marching in central Marvdasht after a protester's death", fa: "گروه بزرگی پس از مرگ یک معترض در مرکز مرودشت راهپیمایی می‌کنند" }, coords: [29.878723, 52.806776], link: "https://x.com/Shayan86/status/2007170005486711268", date: "2026-01-02", size: "big", alt: "https://x.com/GhonchehAzad/status/2007104961411522690" },
+                { id: 25, desc: { en: "Protesters chant \"death to the dictator\" on Khayyam Boulevard, Qazvin", fa: "معترضان در بلوار خیام قزوین شعار «مرگ بر دیکتاتور» سر می‌دهند" }, coords: [36.280625, 50.009936], link: "https://x.com/Shayan86/status/2007176433966465290", date: "2026-01-02", size: "medium", alt: null },
+                { id: 26, desc: { en: "Protesters chant \"death to the dictator\" in Nazi Abad, south Tehran", fa: "معترضان در نازی‌آباد جنوب تهران شعار «مرگ بر دیکتاتور» سر می‌دهند" }, coords: [35.6379206, 51.4049812], link: "https://x.com/Shayan86/status/2007179679569264953", date: "2026-01-02", size: "medium", alt: "https://x.com/GhonchehAzad/status/2007177746196369773, https://x.com/GhonchehAzad/status/2007490386294677543" },
+                { id: 27, desc: { en: "Large group chanting for Pahlavi dynasty return on Khayyam Boulevard, Qazvin", fa: "گروه بزرگی در بلوار خیام قزوین بازگشت دودمان پهلوی را فریاد می‌زنند" }, coords: [36.277281, 50.009420], link: "https://x.com/Shayan86/status/2007187120134431022", date: "2026-01-02", size: "big", alt: null },
+                { id: 28, desc: { en: "Group gathering on Tohid Boulevard, Qom", fa: "گروهی در بلوار توحید قم تجمع کرده‌اند" }, coords: [34.6440083, 50.8613519], link: "https://x.com/Shayan86/status/2007214603500171285", date: "2026-01-02", size: "small", alt: "https://x.com/GhonchehAzad/status/2007130858772427133" },
+                { id: 29, desc: { en: "Banner of Qasem Soleimani set on fire near Zayande Rud river, Isfahan", fa: "بنر قاسم سلیمانی نزدیک رودخانه زاینده‌رود اصفهان به آتش کشیده می‌شود" }, coords: [32.6436558, 51.6715999], link: "https://x.com/Shayan86/status/2007343595926499504", date: "2026-01-03", size: "small", alt: null },
+                { id: 30, desc: { en: "Group chanting \"long live the Shah\" in Tehranpars, east Tehran", fa: "گروهی در تهرانپارس شرق تهران شعار «شاه زنده باد» سر می‌دهند" }, coords: [35.742378, 51.534020], link: "https://x.com/Shayan86/status/2007345605467926884", date: "2026-01-03", size: "small", alt: "https://x.com/GhonchehAzad/status/2007231019070697694, https://x.com/GhonchehAzad/status/2007527025733751180" },
+                { id: 31, desc: { en: "Group chanting \"death to the entire regime\" near Haft Hoz Square, Narmak, east Tehran", fa: "گروهی نزدیک میدان هفت‌حوض نارمک در شرق تهران شعار «مرگ بر کل نظام» سر می‌دهند" }, coords: [35.728287, 51.493069], link: "https://x.com/Shayan86/status/2007404687960768811", date: "2026-01-03", size: "medium", alt: null },
+                { id: 32, desc: { en: "Group gathered in Kazerun, southern Fars Province", fa: "گروهی در کازرون استان فارس تجمع کرده‌اند" }, coords: [29.6193901, 51.6542880], link: "https://x.com/GhonchehAzad/status/2007387252855583080", date: "2026-01-03", size: "medium", alt: null },
+                { id: 33, desc: { en: "Woman holding sign \"I’m not a rioter\" in Tehran", fa: "زنی در تهران پلاکارد «من آشوبگر نیستم» در دست دارد" }, coords: [35.63914, 51.41092], link: "https://x.com/GhonchehAzad/status/2007497902902636989", date: "2026-01-03", size: "small", alt: null },
+                { id: 34, desc: { en: "Group chanting “Death to Khamenei” in Ilam, western Iran", fa: "گروهی در ایلام غرب ایران شعار «مرگ بر خامنه‌ای» سر می‌دهند" }, coords: [33.6368095, 46.4218413], link: "https://x.com/GhonchehAzad/status/2007488952362742103", date: "2026-01-03", size: "small", alt: null },
+                { id: 35, desc: { en: "Protesters gathered in front of Charsou, Tehran", fa: "معترضان مقابل چارسو در تهران تجمع کرده‌اند" }, coords: [35.69444, 51.41157], link: "https://x.com/GhonchehAzad/status/2007820355914932569", date: "2026-01-04", size: "medium", alt: null },
+                { id: 36, desc: { en: "Security officers shooting in western Ilam Province (towards a hospital)", fa: "ماموران امنیتی در غرب استان ایلام (به سمت یک بیمارستان) شلیک می‌کنند" }, coords: [33.6368095, 46.4218413], link: "https://x.com/GhonchehAzad/status/2007917698450423879", date: "2026-01-04", size: "small", alt: "https://x.com/GhonchehAzad/status/2007919876661502077" },
+                { id: 37, desc: { en: "Protesters attacking and clashing with security forces in Marlik, Malard, Tehran Province", fa: "معترضان در مارلیک ملارد استان تهران به نیروهای امنیتی حمله کرده و درگیر می‌شوند" }, coords: [35.69949, 50.98223], link: "https://x.com/GeoConfirmed/status/2006767204038049828", date: "2026-01-01", size: "medium", alt: "https://x.com/mhmiranusa/status/2006583893114204439" },
+                { id: 38, desc: { en: "Security forces firing at protesters outside government complex in Arkavaz, Malekshahi County, Ilam Province (reported 4-8 killed, 30+ injured)", fa: "نیروهای امنیتی بیرون مجتمع دولتی در ارکواز، شهرستان ملکشاهی استان ایلام به سوی معترضان تیراندازی می‌کنند (گزارش ۴ تا ۸ کشته و بیش از ۳۰ زخمی)" }, coords: [33.39237, 46.59871], link: "https://x.com/Mitch_Ulrich/status/2007667072223064529", date: "2026-01-04", size: "big", alt: "https://x.com/Mitch_Ulrich/status/2007883928263417878" },
+                { id: 39, desc: { en: "Clashes with security forces at Imam Hussein Square in Shazand, Markazi Province", fa: "درگیری با نیروهای امنیتی در میدان امام حسین شازند استان مرکزی" }, coords: [33.93184, 49.40307], link: "https://x.com/Mitch_Ulrich/status/2007945788392124873", date: "2026-01-04", size: "medium", alt: null },
+                { id: 40, desc: { en: "Protests with fires and chants against Khamenei in Fuladshahr, Isfahan Province", fa: "اعتراضات همراه با آتش و شعار علیه خامنه‌ای در فولادشهر استان اصفهان" }, coords: [32.482246, 51.404348], link: "https://x.com/GeoConfirmed/status/2006392706881253489", date: "2025-12-31", size: "medium", alt: null }
             ];
 
             const incidents = useMemo(() => rawIncidents.map(i => ({
                 ...i,
+                desc: i.desc[language],
                 link: i.link.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, ''),
                 alt: i.alt ? i.alt.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, '').split(',')[0].trim() : null
-            })), []);
+            })), [language]);
 
             // --- Timeline Data ---
             const { uniqueDates, minDate, maxDate } = useMemo(() => {
@@ -464,7 +551,7 @@
                                 <div>
                                     ${incident.desc}
                                 </div>
-                                <div class="text-xs text-gray-500 font-normal mt-1 opacity-70">Click for more info</div>
+                                <div class="text-xs text-gray-500 font-normal mt-1 opacity-70">${t.tooltipMoreInfo}</div>
                             </div>
                         `, { direction: 'top', offset: [0, -iconSize + 5], opacity: 0.95, className: 'custom-tooltip' });
 
@@ -498,6 +585,9 @@
                 if (activeLayer === 'satellite') setActiveLayer('light');
                 else setActiveLayer('satellite');
             };
+            const toggleLanguage = () => {
+                setLanguage(prev => prev === 'en' ? 'fa' : 'en');
+            };
 
             // Reset Map View & Close Panels
             const resetView = () => {
@@ -513,59 +603,62 @@
             const glassHover = isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80";
 
             return (
-                <div className="relative w-full h-screen bg-gray-100 overflow-hidden font-sans">
-                    
+                <div className="relative w-full h-screen bg-gray-100 overflow-hidden font-sans" dir={isRTL ? 'rtl' : 'ltr'}>
+
                     <div ref={mapContainerRef} className="absolute inset-0 z-0 bg-slate-200" />
 
                     {/* Header */}
                     <div className="absolute top-6 left-6 z-[1000] select-none max-w-[80vw] group">
-                        <h1 
+                        <h1
                             onClick={resetView}
-                            className={`text-3xl md:text-4xl font-extrabold tracking-tight drop-shadow-lg transition-all duration-300 cursor-pointer active:scale-95 group-hover:opacity-80 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-                            title="Reset Map View"
+                            className={`text-3xl md:text-4xl font-extrabold tracking-tight drop-shadow-lg transition-all duration-300 cursor-pointer active:scale-95 group-hover:opacity-80 ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isRTL ? 'text-right' : 'text-left'}`}
+                            title={t.resetMapView}
                         >
-                            Iran Protest Map
+                            {t.mapTitle}
                         </h1>
-                        <p className={`text-sm font-medium mt-1 drop-shadow-md transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-600'}`}>
-                            Live Incident Tracker • {displayedIncidents.length} Events Visible
+                        <p className={`text-sm font-medium mt-1 drop-shadow-md transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-600'} ${isRTL ? 'text-right' : 'text-left'}`}>
+                            {t.subtitle(displayedIncidents.length)}
                         </p>
-                        
+
                         {/* Legend */}
-                        <div className={`mt-3 flex flex-col space-y-1.5 transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-600'}`}>
+                        <div className={`mt-3 flex flex-col space-y-1.5 transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-600'} ${isRTL ? 'items-end' : 'items-start'}`}>
                             <div className="flex items-center text-xs font-medium drop-shadow-md">
-                                <span className="w-2.5 h-2.5 rounded-full bg-red-500 mr-2 shadow-sm"></span>
-                                Large Crowd
+                                <span className={`w-2.5 h-2.5 rounded-full bg-red-500 ${isRTL ? 'ml-2' : 'mr-2'} shadow-sm`}></span>
+                                {t.legendLarge}
                             </div>
                             <div className="flex items-center text-xs font-medium drop-shadow-md">
-                                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 mr-2 shadow-sm"></span>
-                                Medium Crowd
+                                <span className={`w-2.5 h-2.5 rounded-full bg-orange-500 ${isRTL ? 'ml-2' : 'mr-2'} shadow-sm`}></span>
+                                {t.legendMedium}
                             </div>
                             <div className="flex items-center text-xs font-medium drop-shadow-md">
-                                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 mr-2 shadow-sm"></span>
-                                Small Group
+                                <span className={`w-2.5 h-2.5 rounded-full bg-yellow-400 ${isRTL ? 'ml-2' : 'mr-2'} shadow-sm`}></span>
+                                {t.legendSmall}
                             </div>
                         </div>
                     </div>
 
                     {/* Top Right Controls */}
-                    <div className="absolute top-6 right-6 z-[1000] flex flex-col items-end space-y-3">
+                    <div className={`absolute top-6 right-6 z-[1000] flex flex-col items-end space-y-3 ${isRTL ? 'text-right' : 'text-left'}`}>
                         <div className={`backdrop-blur-xl shadow-xl rounded-full p-1.5 border flex items-center space-x-2 transition-colors duration-300 ${glassClass}`}>
-                            <button onClick={toggleTheme} className={`p-2.5 rounded-full transition-all duration-200 ${glassHover}`} title="Toggle Light/Dark">
+                            <button onClick={toggleTheme} className={`p-2.5 rounded-full transition-all duration-200 ${glassHover}`} title={t.toggleTheme}>
                                 {activeLayer === 'light' ? <IconSun /> : <IconMoon />}
                             </button>
-                            <button onClick={toggleSatellite} className={`p-2.5 rounded-full transition-all duration-200 text-lg leading-none ${activeLayer === 'satellite' ? 'bg-blue-600/80 text-white' : glassHover}`} title="Satellite View">
+                            <button onClick={toggleSatellite} className={`p-2.5 rounded-full transition-all duration-200 text-lg leading-none ${activeLayer === 'satellite' ? 'bg-blue-600/80 text-white' : glassHover}`} title={t.satelliteView}>
                                 🛰️
+                            </button>
+                            <button onClick={toggleLanguage} className={`px-3 py-2 rounded-full transition-all duration-200 text-xs font-bold tracking-wide ${language === 'fa' ? 'bg-blue-600/80 text-white shadow-sm' : glassHover}`} title={language === 'fa' ? t.toggleLanguageEn : t.toggleLanguage}>
+                                {language === 'fa' ? 'FA' : 'EN'}
                             </button>
                         </div>
 
-                        <button 
-                            onClick={() => setShowGraph(true)} 
+                        <button
+                            onClick={() => setShowGraph(true)}
                             className={`backdrop-blur-xl shadow-xl rounded-full px-4 py-2 border flex items-center space-x-2 text-sm font-semibold transition-all duration-200 ${glassClass} ${glassHover}`}
                         >
                             <IconChart size={16} />
-                            <span>Show Chart</span>
+                            <span>{t.showChart}</span>
                         </button>
-                        
+
                         <div className={`backdrop-blur-xl shadow-xl rounded-full p-1.5 border flex flex-col space-y-1 ${glassClass}`}>
                             <button onClick={handleZoomIn} className={`p-2 rounded-full transition-colors ${glassHover}`}><IconZoomIn /></button>
                             <button onClick={handleZoomOut} className={`p-2 rounded-full transition-colors ${glassHover}`}><IconZoomOut /></button>
@@ -574,17 +667,17 @@
 
                     {/* Timeline Slider (Bottom Center) */}
                     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-xl px-4">
-                         <div className={`backdrop-blur-xl shadow-2xl rounded-2xl p-4 border flex flex-col space-y-3 transition-colors duration-300 ${glassClass}`}>
+                        <div className={`backdrop-blur-xl shadow-2xl rounded-2xl p-4 border flex flex-col space-y-3 transition-colors duration-300 ${glassClass}`}>
                             <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wide opacity-90">
-                                <span>Timeline Control</span>
-                                <span>{dateFilter || "Showing All Events"}</span>
+                                <span>{t.timelineControl}</span>
+                                <span>{t.timelineLabel(dateFilter)}</span>
                             </div>
-                            
+
                             <div className="flex items-center space-x-4">
-                                <button 
+                                <button
                                     onClick={() => setIsPlaying(!isPlaying)}
                                     className={`p-2 rounded-full transition-colors ${isPlaying ? 'bg-red-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-                                    title={isPlaying ? "Pause" : "Play Timeline"}
+                                    title={isPlaying ? t.pauseTimeline : t.playTimeline}
                                 >
                                     {isPlaying ? <IconPause size={16} /> : <IconPlay size={16} />}
                                 </button>
@@ -607,17 +700,17 @@
                                 </div>
 
                                 <button 
-                                    onClick={() => { setIsPlaying(false); setDateFilter(null); }} 
+                                    onClick={() => { setIsPlaying(false); setDateFilter(null); }}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors border ${!dateFilter ? 'bg-blue-600 border-blue-600 text-white' : 'border-current opacity-60 hover:opacity-100 hover:bg-current hover:text-white hover:bg-opacity-10'}`}
                                 >
-                                    All
+                                    {t.all}
                                 </button>
                             </div>
                          </div>
                     </div>
 
                     {/* Graph Modal */}
-                    {showGraph && <ProtestGraph data={incidents} onClose={() => setShowGraph(false)} isDarkMode={isDarkMode} />}
+                    {showGraph && <ProtestGraph data={incidents} onClose={() => setShowGraph(false)} isDarkMode={isDarkMode} translations={t} isRTL={isRTL} />}
 
                     {/* Details Panel */}
                     {selectedIncident && (
@@ -625,7 +718,7 @@
                             <div className={`relative w-full max-w-md h-full backdrop-blur-xl shadow-2xl border-l overflow-y-auto flex flex-col animate-slide-in-right no-scrollbar pointer-events-auto ${isDarkMode ? 'bg-gray-900/80 border-gray-700/50' : 'bg-white/80 border-white/50'}`}>
                                 <div className={`sticky top-0 z-10 px-6 py-4 border-b flex justify-between items-start backdrop-blur-md ${isDarkMode ? 'bg-gray-900/60 border-gray-800' : 'bg-white/60 border-gray-100'}`}>
                                     <div>
-                                        <h2 className={`text-xl font-bold leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Incident Details</h2>
+                                        <h2 className={`text-xl font-bold leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'} ${isRTL ? 'text-right' : 'text-left'}`}>{t.incidentDetails}</h2>
                                     </div>
                                     <button onClick={closeModal} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
                                         <IconX size={20} />
@@ -635,12 +728,12 @@
                                 <div className="p-6 space-y-6">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50/50 border-gray-100'}`}>
-                                            <div className="flex items-center text-gray-500 mb-1 text-xs uppercase tracking-wide font-bold"><IconCalendar size={12} className="mr-1.5" /> Date</div>
+                                            <div className={`flex items-center text-gray-500 mb-1 text-xs uppercase tracking-wide font-bold ${isRTL ? 'flex-row-reverse' : ''}`}><IconCalendar size={12} className={isRTL ? 'ml-1.5' : 'mr-1.5'} /> {t.date}</div>
                                             <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{selectedIncident.date}</div>
-                                            <div className="mt-1 text-[10px] text-gray-400 italic leading-tight">Date reflects tweet date.</div>
+                                            <div className={`mt-1 text-[10px] text-gray-400 italic leading-tight ${isRTL ? 'text-right' : 'text-left'}`}>{t.dateNote}</div>
                                         </div>
                                         <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50/50 border-gray-100'}`}>
-                                            <div className="flex items-center text-gray-500 mb-1 text-xs uppercase tracking-wide font-bold"><IconMapPin size={12} className="mr-1.5" /> Location</div>
+                                            <div className={`flex items-center text-gray-500 mb-1 text-xs uppercase tracking-wide font-bold ${isRTL ? 'flex-row-reverse' : ''}`}><IconMapPin size={12} className={isRTL ? 'ml-1.5' : 'mr-1.5'} /> {t.location}</div>
                                             <div className={`font-mono text-sm font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                                                 {selectedIncident.coords[0].toFixed(3)}, {selectedIncident.coords[1].toFixed(3)}
                                             </div>
@@ -648,7 +741,7 @@
                                     </div>
 
                                     <div>
-                                        <h3 className={`text-sm font-bold uppercase tracking-wide mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Description</h3>
+                                        <h3 className={`text-sm font-bold uppercase tracking-wide mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'} ${isRTL ? 'text-right' : 'text-left'}`}>{t.description}</h3>
                                         <p className={`leading-relaxed p-4 rounded-xl border ${isDarkMode ? 'bg-blue-900/10 border-blue-800 text-gray-300' : 'bg-blue-50/30 border-blue-100 text-gray-700'}`}>
                                             {selectedIncident.desc}
                                         </p>
@@ -657,18 +750,22 @@
                                     <div className="space-y-6">
                                         <div>
                                             <div className="flex items-center justify-between mb-3">
-                                                <h3 className={`text-sm font-bold uppercase tracking-wide ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Footage</h3>
-                                                <a href={selectedIncident.link} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline flex items-center">View on X <IconExternalLink size={10} className="ml-1" /></a>
+                                                <h3 className={`text-sm font-bold uppercase tracking-wide ${isDarkMode ? 'text-gray-300' : 'text-gray-900'} ${isRTL ? 'text-right' : 'text-left'}`}>{t.footage}</h3>
+                                                <a href={selectedIncident.link} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline flex items-center">
+                                                    {t.viewOnX} <IconExternalLink size={10} className={isRTL ? 'mr-1' : 'ml-1'} />
+                                                </a>
                                             </div>
-                                            <TweetEmbed url={selectedIncident.link} />
+                                            <TweetEmbed url={selectedIncident.link} loadingText={t.loadingTweet} />
                                         </div>
                                         {selectedIncident.alt && (
                                             <div>
                                                 <div className="flex items-center justify-between mb-3">
-                                                    <h3 className={`text-sm font-bold uppercase tracking-wide ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Alt Angle</h3>
-                                                    <a href={selectedIncident.alt} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline flex items-center">View on X <IconExternalLink size={10} className="ml-1" /></a>
+                                                    <h3 className={`text-sm font-bold uppercase tracking-wide ${isDarkMode ? 'text-gray-300' : 'text-gray-900'} ${isRTL ? 'text-right' : 'text-left'}`}>{t.altAngle}</h3>
+                                                    <a href={selectedIncident.alt} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline flex items-center">
+                                                        {t.viewOnX} <IconExternalLink size={10} className={isRTL ? 'mr-1' : 'ml-1'} />
+                                                    </a>
                                                 </div>
-                                                <TweetEmbed url={selectedIncident.alt} />
+                                                <TweetEmbed url={selectedIncident.alt} loadingText={t.loadingTweet} />
                                             </div>
                                         )}
                                     </div>
