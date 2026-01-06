@@ -55,6 +55,61 @@
             animation: fade-in 0.2s ease-out;
         }
 
+        /* Custom Loading Spinner (Iran Flag Colors) */
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .iran-loader {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: #22c55e; /* Green */
+            border-bottom-color: #ef4444; /* Red */
+            border-left-color: #22c55e; /* Green */
+            border-right-color: #ef4444; /* Red */
+            animation: spin-slow 1.5s linear infinite;
+            position: relative;
+        }
+        .iran-loader::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* Flag Stained Glass Theme for Timeline */
+        .timeline-flag-glass {
+            /* Green top, White middle, Red bottom gradient */
+            background: linear-gradient(
+                180deg, 
+                rgba(34, 197, 94, 0.15) 0%, 
+                rgba(255, 255, 255, 0.5) 45%, 
+                rgba(255, 255, 255, 0.5) 55%, 
+                rgba(239, 68, 68, 0.15) 100%
+            );
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        body.dark-theme .timeline-flag-glass {
+             background: linear-gradient(
+                180deg, 
+                rgba(34, 197, 94, 0.15) 0%, 
+                rgba(255, 255, 255, 0.1) 45%, 
+                rgba(255, 255, 255, 0.1) 55%, 
+                rgba(239, 68, 68, 0.15) 100%
+            );
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
         /* Leaflet Tooltip Customization */
         .leaflet-tooltip-pane .custom-tooltip {
             background: rgba(255, 255, 255, 0.95);
@@ -88,14 +143,14 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Slider Styling */
+        /* Slider Styling - Neutralized Colors */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #2563eb; cursor: pointer; margin-top: -6px; box-shadow: 0 0 2px rgba(0,0,0,0.5); transition: transform 0.1s; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #4b5563; cursor: pointer; margin-top: -6px; box-shadow: 0 0 2px rgba(0,0,0,0.5); transition: transform 0.1s; }
         input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(156, 163, 175, 0.5); border-radius: 2px; }
         input[type=range]:focus { outline: none; }
         input[type=range]::-moz-range-track { width: 100%; height: 4px; cursor: pointer; background: rgba(156, 163, 175, 0.5); border-radius: 2px; }
-        input[type=range]::-moz-range-thumb { height: 16px; width: 16px; border: none; border-radius: 50%; background: #2563eb; cursor: pointer; box-shadow: 0 0 2px rgba(0,0,0,0.5); }
+        input[type=range]::-moz-range-thumb { height: 16px; width: 16px; border: none; border-radius: 50%; background: #4b5563; cursor: pointer; box-shadow: 0 0 2px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body class="bg-gray-100 overflow-hidden">
@@ -119,6 +174,7 @@
         const IconPlay = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
         const IconPause = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>;
         const IconAlert = ({ className = "w-5 h-5" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>;
+        const IconLanguage = ({ size = 20 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>;
 
         // --- Translations ---
         const translations = {
@@ -182,30 +238,50 @@
             }
         };
 
-        // --- Tweet Component ---
-        const TweetEmbed = ({ url }) => {
+        // --- Tweet Component (Optimized) ---
+        const TweetEmbed = ({ url, isDarkMode }) => {
             const containerRef = useRef(null);
+            
+            // Dynamic theme selection
+            const theme = isDarkMode ? 'dark' : 'light';
+
             useEffect(() => {
                 if (!url || !containerRef.current) return;
                 const tweetId = url.split('/').pop().split('?')[0];
                 containerRef.current.innerHTML = ''; 
+
                 if (window.twttr && window.twttr.widgets) {
-                    window.twttr.widgets.createTweet(tweetId, containerRef.current, { theme: 'light', conversation: 'none', align: 'center' });
+                    window.twttr.widgets.createTweet(
+                        tweetId,
+                        containerRef.current,
+                        { theme: theme, conversation: 'none', align: 'center' }
+                    );
                 } else {
+                    // Fallback if script didn't load for some reason, though preloaded
                     const script = document.createElement('script');
                     script.src = 'https://platform.twitter.com/widgets.js';
                     script.async = true;
                     script.onload = () => {
                          if (window.twttr && window.twttr.widgets) {
-                            window.twttr.widgets.createTweet(tweetId, containerRef.current, { theme: 'light', conversation: 'none', align: 'center' });
+                            window.twttr.widgets.createTweet(
+                                tweetId,
+                                containerRef.current,
+                                { theme: theme, conversation: 'none', align: 'center' }
+                            );
                          }
                     };
                     document.body.appendChild(script);
                 }
-            }, [url]);
+            }, [url, theme]); // Added theme dependency for updates
+
             return (
-                <div ref={containerRef} className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 min-h-[150px] flex items-center justify-center">
-                   <div className="animate-pulse p-4 w-full flex justify-center text-gray-400 text-sm">Loading Tweet...</div>
+                <div className={`relative rounded-xl overflow-hidden border min-h-[250px] flex items-center justify-center ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}>
+                   {/* Loading Spinner positioned behind */}
+                   <div className="absolute inset-0 flex items-center justify-center z-0">
+                       <div className="iran-loader"></div>
+                   </div>
+                   {/* Tweet Container on top */}
+                   <div ref={containerRef} className="relative z-10 w-full min-h-[250px] flex items-center justify-center"></div>
                 </div>
             );
         };
@@ -300,6 +376,17 @@
             const t = translations[lang];
 
             useEffect(() => { document.body.classList.toggle('dark-theme', isDarkMode); }, [isDarkMode]);
+
+            // --- Preload Twitter Script ---
+            useEffect(() => {
+                if (!document.getElementById('twitter-wjs')) {
+                    const script = document.createElement('script');
+                    script.id = 'twitter-wjs';
+                    script.src = 'https://platform.twitter.com/widgets.js';
+                    script.async = true;
+                    document.body.appendChild(script);
+                }
+            }, []);
 
             // --- Verified Data ---
             const verifiedIncidents = useMemo(() => [
@@ -628,8 +715,8 @@
 
                     {/* Timeline Slider (Bottom Center) */}
                     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-xl px-4">
-                         <div className={`backdrop-blur-xl shadow-2xl rounded-2xl p-3 md:p-4 border flex flex-col space-y-3 transition-colors duration-300 ${glassClass} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
-                            <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wide opacity-90">
+                         <div className={`backdrop-blur-xl shadow-2xl rounded-2xl p-3 md:p-4 border flex flex-col space-y-3 transition-colors duration-300 timeline-flag-glass ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
+                            <div className={`flex justify-between items-center text-xs font-bold uppercase tracking-wide opacity-90 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                                 <span>{t.timeline}</span>
                                 <span>{dateFilter || t.showingAll}</span>
                             </div>
@@ -637,7 +724,7 @@
                             <div className={`flex items-center space-x-4 ${lang === 'fa' ? 'space-x-reverse' : ''}`}>
                                 <button 
                                     onClick={() => setIsPlaying(!isPlaying)}
-                                    className={`p-2 rounded-full transition-colors ${isPlaying ? 'bg-red-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                                    className={`p-2 rounded-full transition-colors ${isPlaying ? 'bg-gray-700 text-white' : 'bg-gray-900 text-white hover:bg-gray-700'}`}
                                     title={isPlaying ? "Pause" : "Play Timeline"}
                                 >
                                     {isPlaying ? <IconPause className="w-4 h-4" /> : <IconPlay className="w-4 h-4" />}
@@ -654,14 +741,14 @@
                                             setDateFilter(uniqueDates[e.target.value]);
                                         }}
                                         disabled={!dateFilter && isPlaying}
-                                        className={`w-full h-2 bg-gray-200/50 rounded-lg appearance-none cursor-pointer accent-blue-600 z-10 ${lang === 'fa' ? 'rotate-180' : ''}`}
+                                        className={`w-full h-2 bg-gray-500/30 rounded-lg appearance-none cursor-pointer z-10 ${lang === 'fa' ? 'rotate-180' : ''}`}
                                     />
-                                    <div className="absolute inset-0 h-2 bg-gray-300/30 rounded-lg -z-0 pointer-events-none"></div>
+                                    <div className="absolute inset-0 h-2 bg-gray-500/20 rounded-lg -z-0 pointer-events-none"></div>
                                 </div>
 
                                 <button 
                                     onClick={() => { setIsPlaying(false); setDateFilter(null); }} 
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors border ${!dateFilter ? 'bg-blue-600 border-blue-600 text-white' : 'border-current opacity-60 hover:opacity-100 hover:bg-current hover:text-white hover:bg-opacity-10'}`}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors border ${!dateFilter ? 'bg-gray-800 border-gray-800 text-white' : 'border-gray-600 text-gray-700 hover:bg-gray-800 hover:text-white'}`}
                                 >
                                     {t.all}
                                 </button>
@@ -721,7 +808,7 @@
                                                     {t.viewOnX} <IconExternalLink className="w-3 h-3 ml-1" />
                                                 </a>
                                             </div>
-                                            <TweetEmbed url={selectedIncident.link} />
+                                            <TweetEmbed url={selectedIncident.link} isDarkMode={isDarkMode} />
                                         </div>
                                         {selectedIncident.alt && (
                                             <div>
@@ -731,7 +818,7 @@
                                                         {t.viewOnX} <IconExternalLink className="w-3 h-3 ml-1" />
                                                     </a>
                                                 </div>
-                                                <TweetEmbed url={selectedIncident.alt} />
+                                                <TweetEmbed url={selectedIncident.alt} isDarkMode={isDarkMode} />
                                             </div>
                                         )}
                                     </div>
