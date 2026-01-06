@@ -118,7 +118,7 @@
         const IconRefresh = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>;
         const IconPlay = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
         const IconPause = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>;
-        const IconLanguage = ({ size = 20 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>;
+        const IconAlert = ({ className = "w-5 h-5" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>;
 
         // --- Translations ---
         const translations = {
@@ -128,7 +128,10 @@
                 largeCrowd: "Large Crowd",
                 mediumCrowd: "Medium Crowd",
                 smallGroup: "Small Group",
+                unverified: "Unverified",
                 showChart: "Show Chart",
+                showUnverified: "Show Unverified",
+                hideUnverified: "Hide Unverified",
                 timeline: "Timeline Control",
                 showingAll: "Showing All Events",
                 all: "All",
@@ -154,7 +157,10 @@
                 largeCrowd: "جمعیت زیاد",
                 mediumCrowd: "جمعیت متوسط",
                 smallGroup: "گروه کوچک",
+                unverified: "تأیید نشده",
                 showChart: "نمایش نمودار",
+                showUnverified: "نمایش تأیید نشده",
+                hideUnverified: "پنهان کردن تأیید نشده",
                 timeline: "کنترل زمانی",
                 showingAll: "نمایش همه رویدادها",
                 all: "همه",
@@ -213,9 +219,10 @@
                     return {
                         date,
                         total: dayEvents.length,
-                        small: dayEvents.filter(d => d.size === 'small').length,
-                        medium: dayEvents.filter(d => d.size === 'medium').length,
-                        big: dayEvents.filter(d => d.size === 'big').length
+                        small: dayEvents.filter(d => d.size === 'small' && d.verified).length,
+                        medium: dayEvents.filter(d => d.size === 'medium' && d.verified).length,
+                        big: dayEvents.filter(d => d.size === 'big' && d.verified).length,
+                        unverified: dayEvents.filter(d => !d.verified).length
                     };
                 });
                 return { dates, series };
@@ -255,15 +262,18 @@
                                 <path d={createPath('big')} fill="none" stroke="#EF4444" strokeWidth="2" strokeDasharray="5 5" />
                                 <path d={createPath('medium')} fill="none" stroke="#F97316" strokeWidth="2" strokeDasharray="3 3" />
                                 <path d={createPath('small')} fill="none" stroke="#FACC15" strokeWidth="2" />
+                                <path d={createPath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2" strokeDasharray="2 2" />
+                                
                                 {series.map((p, i) => <circle key={i} cx={getX(i)} cy={getY(p.total)} r="3" fill="#60A5FA" />)}
                                 {series.map((p, i) => <text key={i} x={getX(i)} y={height - 5} fontSize="8" textAnchor="middle" fill={isDarkMode ? "#9CA3AF" : "#6B7280"}>{p.date.slice(5)}</text>)}
                             </svg>
                         </div>
-                        <div className={`flex justify-center space-x-4 mt-6 text-xs font-medium ${lang === 'fa' ? 'space-x-reverse font-[Vazirmatn]' : ''}`}>
+                        <div className={`flex justify-center flex-wrap gap-x-4 gap-y-2 mt-6 text-xs font-medium ${lang === 'fa' ? 'space-x-reverse font-[Vazirmatn]' : ''}`}>
                             <div className="flex items-center"><span className="w-3 h-1 bg-blue-400 rounded mr-2 ml-1"></span><span className={textColor}>{t.total}</span></div>
                             <div className="flex items-center"><span className="w-3 h-1 bg-red-500 rounded mr-2 ml-1 border border-dashed border-white"></span><span className={textColor}>{t.large}</span></div>
                             <div className="flex items-center"><span className="w-3 h-1 bg-orange-500 rounded mr-2 ml-1 border border-dotted border-white"></span><span className={textColor}>{t.medium}</span></div>
                             <div className="flex items-center"><span className="w-3 h-1 bg-yellow-400 rounded mr-2 ml-1"></span><span className={textColor}>{t.small}</span></div>
+                            <div className="flex items-center"><span className="w-3 h-1 bg-gray-400 rounded mr-2 ml-1 border border-dashed border-white"></span><span className={textColor}>{t.unverified}</span></div>
                         </div>
                      </div>
                 </div>
@@ -281,79 +291,114 @@
             const [zoomLevel, setZoomLevel] = useState(5);
             const [selectedIncident, setSelectedIncident] = useState(null);
             const [showGraph, setShowGraph] = useState(false);
+            const [showUnverified, setShowUnverified] = useState(false);
             const [dateFilter, setDateFilter] = useState(null); 
             const [isPlaying, setIsPlaying] = useState(false);
-            const [lang, setLang] = useState('en'); // 'en' or 'fa'
+            const [lang, setLang] = useState('en'); 
 
             const isDarkMode = activeLayer === 'dark' || activeLayer === 'satellite';
             const t = translations[lang];
 
-            // Sync Dark Mode with Body
             useEffect(() => { document.body.classList.toggle('dark-theme', isDarkMode); }, [isDarkMode]);
 
-            // --- Data ---
-            const rawIncidents = [
-                { "id": 1, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "desc_fa": "عقب راندن نیروهای پلیس و امنیتی توسط معترضان در خیابان جمهوری تهران", "coords": [35.6927461, 51.4255329], "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null },
-                { "id": 2, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "desc_fa": "تجمع معترضان مقابل مرکز خرید قصر در جزیره قشم", "coords": [26.968793, 56.075395], "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null },
-                { "id": 3, "desc": "Group gathered in Tehran", "desc_fa": "تجمع گروهی از مردم در تهران", "coords": [35.752619, 51.466106], "link": "https://x.com/GhonchehAzad/status/2005992119258038527", "date": "2025-12-30", "size": "big", "alt": null },
-                { "id": 4, "desc": "Protester sits down in front of forces outside Charsou shopping centre on Jomhouri Street, Tehran", "desc_fa": "تحصن یک معترض مقابل نیروهای امنیتی روبروی پاساژ چارسو در خیابان جمهوری تهران", "coords": [35.695143, 51.412703], "link": "https://x.com/Shayan86/status/2006018573769019635", "date": "2025-12-30", "size": "small", "alt": null },
-                { "id": 5, "desc": "Unrest with students running at University of Tehran", "desc_fa": "ناآرامی و شعار دادن دانشجویان در دانشگاه تهران (شعار مرگ بر دیکتاتور و آزادی)", "coords": [35.7036777, 51.3956859], "link": "https://x.com/GhonchehAzad/status/2006018665456501147", "date": "2025-12-30", "size": "medium", "alt": "https://x.com/Shayan86/status/2006039256603513166" },
-                { "id": 6, "desc": "Woman leads chants of \"don't be afraid, we're all together\" in Tehran's Grand Bazaar", "desc_fa": "شعار «نترسید نترسید ما همه با هم هستیم» توسط یک زن در بازار بزرگ تهران", "coords": [35.6727692, 51.4214139], "link": "https://x.com/Shayan86/status/2006051668295647391", "date": "2025-12-30", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006036269298512269" },
-                { "id": 7, "desc": "Clashes between police and protesters in Hamedan", "desc_fa": "درگیری بین پلیس و معترضان در همدان", "coords": [34.7954883, 48.5143633], "link": "https://x.com/GhonchehAzad/status/2006077897610797143", "date": "2025-12-30", "size": "medium", "alt": "https://x.com/Shayan86/status/2006728257450946936" },
-                { "id": 8, "desc": "Man calls for help as protesters run from forces on Rajaei Street, Arak", "desc_fa": "درخواست کمک مردم در حالی که معترضان از نیروهای امنیتی در خیابان رجایی اراک فرار می‌کنند", "coords": [34.084962, 49.691045], "link": "https://x.com/Shayan86/status/2006174541567898093", "date": "2025-12-31", "size": "small", "alt": null },
-                { "id": 9, "desc": "Shots fired at protesters on Imam Khomeini Street, Fasa", "desc_fa": "تیراندازی به سمت معترضان در خیابان امام خمینی فسا", "coords": [28.939864, 53.647716], "link": "https://x.com/Shayan86/status/2006332899751301458", "date": "2025-12-31", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2006331110993883448" },
-                { "id": 10, "desc": "Protesters remove entrance gate of local government building in Fasa", "desc_fa": "معترضان در فرمانداری فسا را از جا کندند", "coords": [28.940212, 53.648819], "link": "https://x.com/Shayan86/status/2006412023597355302", "date": "2025-12-31", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006319069432012957" },
-                { "id": 11, "desc": "Shots fired towards protesters at Imam Khomeini Square, Kuhdasht", "desc_fa": "تیراندازی به سمت معترضان در میدان امام خمینی کوهدشت", "coords": [33.533535, 47.607890], "link": "https://x.com/Shayan86/status/2006418603029987588", "date": "2025-12-31", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006403148684943839" },
-                { "id": 12, "desc": "Protesters in Ramhormoz", "desc_fa": "تجمع معترضان در رامهرمز", "coords": [31.2800698, 49.6083711], "link": "https://x.com/GhonchehAzad/status/2006472230344220830", "date": "2025-12-31", "size": "medium", "alt": null },
-                { "id": 13, "desc": "At least one individual arrested in front of Shahid Beheshti University dormitory, Tehran", "desc_fa": "بازداشت حداقل یک نفر مقابل خوابگاه دانشگاه شهید بهشتی تهران", "coords": [35.8059661, 51.3938244], "link": "https://x.com/GhonchehAzad/status/2006484693064270278", "date": "2025-12-31", "size": "small", "alt": null },
-                { "id": 14, "desc": "Protests with fires and chants against Khamenei in Fuladshahr, Isfahan Province", "desc_fa": "اعتراضات، آتش زدن و شعار علیه خامنه‌ای در فولادشهر اصفهان", "coords": [32.482246, 51.404348], "link": "https://x.com/GeoConfirmed/status/2006392706881253489", "date": "2025-12-31", "size": "medium", "alt": null },
-                { "id": 15, "desc": "Protesters set fire to local police station in Azna", "desc_fa": "به آتش کشیدن کانکس پلیس توسط معترضان در ازنا", "coords": [33.460733, 49.451621], "link": "https://x.com/Shayan86/status/2006850300645355614", "date": "2026-01-01", "size": "small", "alt": null },
-                { "id": 16, "desc": "Chants of \"don't be afraid, we're all together\" in Karaj", "desc_fa": "شعار «نترسید ما همه با هم هستیم» در کرج", "coords": [35.842676, 50.971310], "link": "https://x.com/Shayan86/status/2006867020508430504", "date": "2026-01-01", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006811169957585230" },
-                { "id": 17, "desc": "Protesters attacking and clashing with security forces in Marlik, Malard, Tehran Province", "desc_fa": "حمله و درگیری معترضان با نیروهای امنیتی در مارلیک ملارد", "coords": [35.69949, 50.98223], "link": "https://x.com/GeoConfirmed/status/2006767204038049828", "date": "2026-01-01", "size": "medium", "alt": "https://x.com/mhmiranusa/status/2006583893114204439" },
-                { "id": 18, "desc": "Protesters pelt stones at bike-riding security forces on Del Azad Boulevard, Qom", "desc_fa": "پرتاب سنگ توسط معترضان به نیروهای امنیتی موتورسوار در بلوار دل‌آذر قم", "coords": [34.635653, 50.903530], "link": "https://x.com/Shayan86/status/2006883608489803839", "date": "2026-01-02", "size": "medium", "alt": null },
-                { "id": 19, "desc": "Protesters chant \"freedom, freedom, freedom\" on Maliabad Boulevard, Shiraz", "desc_fa": "شعار «آزادی آزادی آزادی» معترضان در بلوار معالی‌آباد شیراز", "coords": [29.6813125, 52.4621809], "link": "https://x.com/Shayan86/status/2007140469575463141", "date": "2026-01-02", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2006840481955852628" },
-                { "id": 20, "desc": "Protesters march chanting in support of Pahlavi dynasty in central Marvdasht", "desc_fa": "راهپیمایی و شعار در حمایت از پهلوی در مرکز مرودشت", "coords": [29.874124, 52.800150], "link": "https://x.com/Shayan86/status/2007143719263420764", "date": "2026-01-02", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2006729302105104558" },
-                { "id": 21, "desc": "Group gathers outside government-linked building with explosion heard in Lordegan", "desc_fa": "تجمع و شنیده شدن صدای انفجار مقابل یک ساختمان دولتی در لردگان", "coords": [31.519264, 50.824531], "link": "https://x.com/Shayan86/status/2007145981104795668", "date": "2026-01-02", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006726390729814444" },
-                { "id": 22, "desc": "Protesters chant \"people of Iran, scream and shout for your rights\" on Shariati Street, Babol", "desc_fa": "شعار «ایرانی داد بزن حقتو فریاد بزن» در خیابان شریعتی بابل", "coords": [36.565107, 52.678999], "link": "https://x.com/Shayan86/status/2007155657775227083", "date": "2026-01-02", "size": "medium", "alt": null },
-                { "id": 23, "desc": "Security forces detain a young woman near Haft Hoz Square, east Tehran", "desc_fa": "بازداشت خشونت‌آمیز یک زن جوان توسط نیروهای امنیتی در میدان هفت‌حوض تهران", "coords": [35.731604, 51.494020], "link": "https://x.com/Shayan86/status/2007158833781637299", "date": "2026-01-02", "size": "small", "alt": null },
-                { "id": 24, "desc": "Protesters outside police station with gunshots heard in Marvdasht", "desc_fa": "تجمع معترضان مقابل کلانتری و صدای تیراندازی در مرودشت", "coords": [29.880899, 52.808695], "link": "https://x.com/Shayan86/status/2007166728086925314", "date": "2026-01-02", "size": "medium", "alt": null },
-                { "id": 25, "desc": "Large group marching in central Marvdasht after a protester's death", "desc_fa": "راهپیمایی بزرگ در مرکز مرودشت پس از کشته شدن یک معترض", "coords": [29.878723, 52.806776], "link": "https://x.com/Shayan86/status/2007170005486711268", "date": "2026-01-02", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2007104961411522690" },
-                { "id": 26, "desc": "Protesters chant \"death to the dictator\" on Khayyam Boulevard, Qazvin", "desc_fa": "شعار «مرگ بر دیکتاتور» در بلوار خیام قزوین", "coords": [36.280625, 50.009936], "link": "https://x.com/Shayan86/status/2007176433966465290", "date": "2026-01-02", "size": "medium", "alt": null },
-                { "id": 27, "desc": "Protesters chant \"death to the dictator\" in Nazi Abad, south Tehran", "desc_fa": "شعار «مرگ بر دیکتاتور» در نازی‌آباد تهران", "coords": [35.6379206, 51.4049812], "link": "https://x.com/Shayan86/status/2007179679569264953", "date": "2026-01-02", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2007177746196369773, https://x.com/GhonchehAzad/status/2007490386294677543" },
-                { "id": 28, "desc": "Large group chanting for Pahlavi dynasty return on Khayyam Boulevard, Qazvin", "desc_fa": "تجمع بزرگ و شعار در حمایت از پهلوی در بلوار خیام قزوین", "coords": [36.277281, 50.009420], "link": "https://x.com/Shayan86/status/2007187120134431022", "date": "2026-01-02", "size": "big", "alt": null },
-                { "id": 29, "desc": "Group gathering on Tohid Boulevard, Qom", "desc_fa": "تجمع گروهی در بلوار توحید قم", "coords": [34.6440083, 50.8613519], "link": "https://x.com/Shayan86/status/2007214603500171285", "date": "2026-01-02", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007130858772427133" },
-                { "id": 30, "desc": "Banner of Qasem Soleimani set on fire near Zayande Rud river, Isfahan", "desc_fa": "آتش زدن بنر قاسم سلیمانی نزدیک زاینده‌رود اصفهان", "coords": [32.6436558, 51.6715999], "link": "https://x.com/Shayan86/status/2007343595926499504", "date": "2026-01-03", "size": "small", "alt": null },
-                { "id": 31, "desc": "Group chanting \"long live the Shah\" in Tehranpars, east Tehran", "desc_fa": "شعار «جاوید شاه» در تهرانپارس", "coords": [35.742378, 51.534020], "link": "https://x.com/Shayan86/status/2007345605467926884", "date": "2026-01-03", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007231019070697694, https://x.com/GhonchehAzad/status/2007527025733751180" },
-                { "id": 32, "desc": "Group chanting \"death to the entire regime\" near Haft Hoz Square, Narmak, east Tehran", "desc_fa": "شعار «مرگ بر کل نظام» در میدان هفت‌حوض نارمک", "coords": [35.728287, 51.493069], "link": "https://x.com/Shayan86/status/2007404687960768811", "date": "2026-01-03", "size": "medium", "alt": null },
-                { "id": 33, "desc": "Group gathered in Kazerun, southern Fars Province", "desc_fa": "تجمع در کازرون، استان فارس", "coords": [29.6193901, 51.6542880], "link": "https://x.com/GhonchehAzad/status/2007387252855583080", "date": "2026-01-03", "size": "medium", "alt": null },
-                { "id": 34, "desc": "Woman holding sign \"I’m not a rioter\" in Tehran", "desc_fa": "زنی با پلاکارد «من اغتشاشگر نیستم» در تهران", "coords": [35.63914, 51.41092], "link": "https://x.com/GhonchehAzad/status/2007497902902636989", "date": "2026-01-03", "size": "small", "alt": null },
-                { "id": 35, "desc": "Group chanting “Death to Khamenei” in Ilam, western Iran", "desc_fa": "شعار «مرگ بر خامنه‌ای» در ایلام", "coords": [33.6368095, 46.4218413], "link": "https://x.com/GhonchehAzad/status/2007488952362742103", "date": "2026-01-03", "size": "small", "alt": null },
-                { "id": 36, "desc": "Protesters gathered in front of Charsou, Tehran", "desc_fa": "تجمع معترضان مقابل پاساژ چارسو تهران", "coords": [35.69444, 51.41157], "link": "https://x.com/GhonchehAzad/status/2007820355914932569", "date": "2026-01-04", "size": "medium", "alt": null },
-                { "id": 37, "desc": "Security officers shooting in western Ilam Province (towards a hospital)", "desc_fa": "تیراندازی نیروهای امنیتی در ایلام (به سمت بیمارستان)", "coords": [33.6368095, 46.4218413], "link": "https://x.com/GhonchehAzad/status/2007917698450423879", "date": "2026-01-04", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007919876661502077" },
-                { "id": 38, "desc": "Security forces firing at protesters outside government complex in Arkavaz, Malekshahi County, Ilam Province (reported 4-8 killed, 30+ injured)", "desc_fa": "تیراندازی نیروهای امنیتی به معترضان مقابل فرمانداری ارکواز ملکشاهی ایلام (گزارش ۴-۸ کشته)", "coords": [33.39237, 46.59871], "link": "https://x.com/Mitch_Ulrich/status/2007667072223064529", "date": "2026-01-04", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2007883928263417878" },
-                { "id": 39, "desc": "Clashes with security forces at Imam Hussein Square in Shazand, Markazi Province", "desc_fa": "درگیری با نیروهای امنیتی در میدان امام حسین شازند", "coords": [33.93184, 49.40307], "link": "https://x.com/Mitch_Ulrich/status/2007945788392124873", "date": "2026-01-04", "size": "medium", "alt": null },
-                { "id": 40, "desc": "Group of protesters singing “Ey Iran” in Sari, Mazandaran Province", "desc_fa": "گروهی از معترضان در حال خواندن سرود «ای ایران» در ساری، استان مازندران", "coords": [36.56332, 53.06009], "link": "https://x.com/GhonchehAzad/status/2008115146837860529", "date": "2026-01-05", "size": "medium", "alt": null },
-                { "id": 41, "desc": "Group chanting “Freedom, Freedom, Freedom” in Yasuj, south-western Kohgiluyeh-Boyerahmad Province", "desc_fa": "شعار «آزادی آزادی آزادی» گروهی از معترضان در یاسوج", "coords": [30.66824, 51.58796], "link": "https://x.com/GhonchehAzad/status/2008155320590487813", "date": "2026-01-05", "size": "big", "alt": null },
-                { "id": 42, "desc": "Group chanting “Death to Khamenei” and “Death to the Dictator” near Haft Hoz Square, east Tehran", "desc_fa": "شعار «مرگ بر خامنه‌ای» و «مرگ بر دیکتاتور» در نزدیکی میدان هفت حوض، شرق تهران", "coords": [35.73303, 51.49448], "link": "https://x.com/GhonchehAzad/status/2008256556396339598", "date": "2026-01-05", "size": "big", "alt": "https://x.com/cicikhanoom/status/2008202048895062308, https://x.com/GhonchehAzad/status/2008256732133544164, https://x.com/GhonchehAzad/status/2008256823032516967" }
-            ];
+            // --- Verified Data ---
+            const verifiedIncidents = useMemo(() => [
+                { "id": 1, "verified": true, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "desc_fa": "عقب راندن نیروهای پلیس و امنیتی توسط معترضان در خیابان جمهوری تهران", "coords": [35.6927461, 51.4255329], "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null },
+                { "id": 2, "verified": true, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "desc_fa": "تجمع معترضان مقابل مرکز خرید قصر در جزیره قشم", "coords": [26.968793, 56.075395], "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null },
+                { "id": 3, "verified": true, "desc": "Group gathered in Tehran", "desc_fa": "تجمع گروهی از مردم در تهران", "coords": [35.752619, 51.466106], "link": "https://x.com/GhonchehAzad/status/2005992119258038527", "date": "2025-12-30", "size": "big", "alt": null },
+                { "id": 4, "verified": true, "desc": "Protester sits down in front of forces outside Charsou shopping centre on Jomhouri Street, Tehran", "desc_fa": "تحصن یک معترض مقابل نیروهای امنیتی روبروی پاساژ چارسو در خیابان جمهوری تهران", "coords": [35.695143, 51.412703], "link": "https://x.com/Shayan86/status/2006018573769019635", "date": "2025-12-30", "size": "small", "alt": null },
+                { "id": 5, "verified": true, "desc": "Unrest with students running at University of Tehran", "desc_fa": "ناآرامی و شعار دادن دانشجویان در دانشگاه تهران (شعار مرگ بر دیکتاتور و آزادی)", "coords": [35.7036777, 51.3956859], "link": "https://x.com/GhonchehAzad/status/2006018665456501147", "date": "2025-12-30", "size": "medium", "alt": "https://x.com/Shayan86/status/2006039256603513166" },
+                { "id": 6, "verified": true, "desc": "Woman leads chants of \"don't be afraid, we're all together\" in Tehran's Grand Bazaar", "desc_fa": "شعار «نترسید نترسید ما همه با هم هستیم» توسط یک زن در بازار بزرگ تهران", "coords": [35.6727692, 51.4214139], "link": "https://x.com/Shayan86/status/2006051668295647391", "date": "2025-12-30", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006036269298512269" },
+                { "id": 7, "verified": true, "desc": "Clashes between police and protesters in Hamedan", "desc_fa": "درگیری بین پلیس و معترضان در همدان", "coords": [34.7954883, 48.5143633], "link": "https://x.com/GhonchehAzad/status/2006077897610797143", "date": "2025-12-30", "size": "medium", "alt": "https://x.com/Shayan86/status/2006728257450946936" },
+                { "id": 8, "verified": true, "desc": "Man calls for help as protesters run from forces on Rajaei Street, Arak", "desc_fa": "درخواست کمک مردم در حالی که معترضان از نیروهای امنیتی در خیابان رجایی اراک فرار می‌کنند", "coords": [34.084962, 49.691045], "link": "https://x.com/Shayan86/status/2006174541567898093", "date": "2025-12-31", "size": "small", "alt": null },
+                { "id": 9, "verified": true, "desc": "Shots fired at protesters on Imam Khomeini Street, Fasa", "desc_fa": "تیراندازی به سمت معترضان در خیابان امام خمینی فسا", "coords": [28.939864, 53.647716], "link": "https://x.com/Shayan86/status/2006332899751301458", "date": "2025-12-31", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2006331110993883448" },
+                { "id": 10, "verified": true, "desc": "Protesters remove entrance gate of local government building in Fasa", "desc_fa": "معترضان در فرمانداری فسا را از جا کندند", "coords": [28.940212, 53.648819], "link": "https://x.com/Shayan86/status/2006412023597355302", "date": "2025-12-31", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006319069432012957" },
+                { "id": 11, "verified": true, "desc": "Shots fired towards protesters at Imam Khomeini Square, Kuhdasht", "desc_fa": "تیراندازی به سمت معترضان در میدان امام خمینی کوهدشت", "coords": [33.533535, 47.607890], "link": "https://x.com/Shayan86/status/2006418603029987588", "date": "2025-12-31", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006403148684943839" },
+                { "id": 12, "verified": true, "desc": "Protesters in Ramhormoz", "desc_fa": "تجمع معترضان در رامهرمز", "coords": [31.2800698, 49.6083711], "link": "https://x.com/GhonchehAzad/status/2006472230344220830", "date": "2025-12-31", "size": "medium", "alt": null },
+                { "id": 13, "verified": true, "desc": "At least one individual arrested in front of Shahid Beheshti University dormitory, Tehran", "desc_fa": "بازداشت حداقل یک نفر مقابل خوابگاه دانشگاه شهید بهشتی تهران", "coords": [35.8059661, 51.3938244], "link": "https://x.com/GhonchehAzad/status/2006484693064270278", "date": "2025-12-31", "size": "small", "alt": null },
+                { "id": 14, "verified": true, "desc": "Protests with fires and chants against Khamenei in Fuladshahr, Isfahan Province", "desc_fa": "اعتراضات، آتش زدن و شعار علیه خامنه‌ای در فولادشهر اصفهان", "coords": [32.482246, 51.404348], "link": "https://x.com/GeoConfirmed/status/2006392706881253489", "date": "2025-12-31", "size": "medium", "alt": null },
+                { "id": 15, "verified": true, "desc": "Protesters set fire to local police station in Azna", "desc_fa": "به آتش کشیدن کانکس پلیس توسط معترضان در ازنا", "coords": [33.460733, 49.451621], "link": "https://x.com/Shayan86/status/2006850300645355614", "date": "2026-01-01", "size": "small", "alt": null },
+                { "id": 16, "verified": true, "desc": "Chants of \"don't be afraid, we're all together\" in Karaj", "desc_fa": "شعار «نترسید ما همه با هم هستیم» در کرج", "coords": [35.842676, 50.971310], "link": "https://x.com/Shayan86/status/2006867020508430504", "date": "2026-01-01", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006811169957585230" },
+                { "id": 17, "verified": true, "desc": "Protesters attacking and clashing with security forces in Marlik, Malard, Tehran Province", "desc_fa": "حمله و درگیری معترضان با نیروهای امنیتی در مارلیک ملارد", "coords": [35.69949, 50.98223], "link": "https://x.com/GeoConfirmed/status/2006767204038049828", "date": "2026-01-01", "size": "medium", "alt": "https://x.com/mhmiranusa/status/2006583893114204439" },
+                { "id": 18, "verified": true, "desc": "Protesters pelt stones at bike-riding security forces on Del Azad Boulevard, Qom", "desc_fa": "پرتاب سنگ توسط معترضان به نیروهای امنیتی موتورسوار در بلوار دل‌آذر قم", "coords": [34.635653, 50.903530], "link": "https://x.com/Shayan86/status/2006883608489803839", "date": "2026-01-02", "size": "medium", "alt": null },
+                { "id": 19, "verified": true, "desc": "Protesters chant \"freedom, freedom, freedom\" on Maliabad Boulevard, Shiraz", "desc_fa": "شعار «آزادی آزادی آزادی» معترضان در بلوار معالی‌آباد شیراز", "coords": [29.6813125, 52.4621809], "link": "https://x.com/Shayan86/status/2007140469575463141", "date": "2026-01-02", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2006840481955852628" },
+                { "id": 20, "verified": true, "desc": "Protesters march chanting in support of Pahlavi dynasty in central Marvdasht", "desc_fa": "راهپیمایی و شعار در حمایت از پهلوی در مرکز مرودشت", "coords": [29.874124, 52.800150], "link": "https://x.com/Shayan86/status/2007143719263420764", "date": "2026-01-02", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2006729302105104558" },
+                { "id": 21, "verified": true, "desc": "Group gathers outside government-linked building with explosion heard in Lordegan", "desc_fa": "تجمع و شنیده شدن صدای انفجار مقابل یک ساختمان دولتی در لردگان", "coords": [31.519264, 50.824531], "link": "https://x.com/Shayan86/status/2007145981104795668", "date": "2026-01-02", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2006726390729814444" },
+                { "id": 22, "verified": true, "desc": "Protesters chant \"people of Iran, scream and shout for your rights\" on Shariati Street, Babol", "desc_fa": "شعار «ایرانی داد بزن حقتو فریاد بزن» در خیابان شریعتی بابل", "coords": [36.565107, 52.678999], "link": "https://x.com/Shayan86/status/2007155657775227083", "date": "2026-01-02", "size": "medium", "alt": null },
+                { "id": 23, "verified": true, "desc": "Security forces detain a young woman near Haft Hoz Square, east Tehran", "desc_fa": "بازداشت خشونت‌آمیز یک زن جوان توسط نیروهای امنیتی در میدان هفت‌حوض تهران", "coords": [35.731604, 51.494020], "link": "https://x.com/Shayan86/status/2007158833781637299", "date": "2026-01-02", "size": "small", "alt": null },
+                { "id": 24, "verified": true, "desc": "Protesters outside police station with gunshots heard in Marvdasht", "desc_fa": "تجمع معترضان مقابل کلانتری و صدای تیراندازی در مرودشت", "coords": [29.880899, 52.808695], "link": "https://x.com/Shayan86/status/2007166728086925314", "date": "2026-01-02", "size": "medium", "alt": null },
+                { "id": 25, "verified": true, "desc": "Large group marching in central Marvdasht after a protester's death", "desc_fa": "راهپیمایی بزرگ در مرکز مرودشت پس از کشته شدن یک معترض", "coords": [29.878723, 52.806776], "link": "https://x.com/Shayan86/status/2007170005486711268", "date": "2026-01-02", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2007104961411522690" },
+                { "id": 26, "verified": true, "desc": "Protesters chant \"death to the dictator\" on Khayyam Boulevard, Qazvin", "desc_fa": "شعار «مرگ بر دیکتاتور» در بلوار خیام قزوین", "coords": [36.280625, 50.009936], "link": "https://x.com/Shayan86/status/2007176433966465290", "date": "2026-01-02", "size": "medium", "alt": null },
+                { "id": 27, "verified": true, "desc": "Protesters chant \"death to the dictator\" in Nazi Abad, south Tehran", "desc_fa": "شعار «مرگ بر دیکتاتور» در نازی‌آباد تهران", "coords": [35.6379206, 51.4049812], "link": "https://x.com/Shayan86/status/2007179679569264953", "date": "2026-01-02", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2007177746196369773, https://x.com/GhonchehAzad/status/2007490386294677543" },
+                { "id": 28, "verified": true, "desc": "Large group chanting for Pahlavi dynasty return on Khayyam Boulevard, Qazvin", "desc_fa": "تجمع بزرگ و شعار در حمایت از پهلوی در بلوار خیام قزوین", "coords": [36.277281, 50.009420], "link": "https://x.com/Shayan86/status/2007187120134431022", "date": "2026-01-02", "size": "big", "alt": null },
+                { "id": 29, "verified": true, "desc": "Group gathering on Tohid Boulevard, Qom", "desc_fa": "تجمع گروهی در بلوار توحید قم", "coords": [34.6440083, 50.8613519], "link": "https://x.com/Shayan86/status/2007214603500171285", "date": "2026-01-02", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007130858772427133" },
+                { "id": 30, "verified": true, "desc": "Banner of Qasem Soleimani set on fire near Zayande Rud river, Isfahan", "desc_fa": "آتش زدن بنر قاسم سلیمانی نزدیک زاینده‌رود اصفهان", "coords": [32.6436558, 51.6715999], "link": "https://x.com/Shayan86/status/2007343595926499504", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": 31, "verified": true, "desc": "Group chanting \"long live the Shah\" in Tehranpars, east Tehran", "desc_fa": "شعار «جاوید شاه» در تهرانپارس", "coords": [35.742378, 51.534020], "link": "https://x.com/Shayan86/status/2007345605467926884", "date": "2026-01-03", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007231019070697694, https://x.com/GhonchehAzad/status/2007527025733751180" },
+                { "id": 32, "verified": true, "desc": "Group chanting \"death to the entire regime\" near Haft Hoz Square, Narmak, east Tehran", "desc_fa": "شعار «مرگ بر کل نظام» در میدان هفت‌حوض نارمک", "coords": [35.728287, 51.493069], "link": "https://x.com/Shayan86/status/2007404687960768811", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": 33, "verified": true, "desc": "Group gathered in Kazerun, southern Fars Province", "desc_fa": "تجمع در کازرون، استان فارس", "coords": [29.6193901, 51.6542880], "link": "https://x.com/GhonchehAzad/status/2007387252855583080", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": 34, "verified": true, "desc": "Woman holding sign \"I’m not a rioter\" in Tehran", "desc_fa": "زنی با پلاکارد «من اغتشاشگر نیستم» در تهران", "coords": [35.63914, 51.41092], "link": "https://x.com/GhonchehAzad/status/2007497902902636989", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": 35, "verified": true, "desc": "Group chanting “Death to Khamenei” in Ilam, western Iran", "desc_fa": "شعار «مرگ بر خامنه‌ای» در ایلام", "coords": [33.6368095, 46.4218413], "link": "https://x.com/GhonchehAzad/status/2007488952362742103", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": 36, "verified": true, "desc": "Protesters gathered in front of Charsou, Tehran", "desc_fa": "تجمع معترضان مقابل پاساژ چارسو تهران", "coords": [35.69444, 51.41157], "link": "https://x.com/GhonchehAzad/status/2007820355914932569", "date": "2026-01-04", "size": "medium", "alt": null },
+                { "id": 37, "verified": true, "desc": "Security officers shooting in western Ilam Province (towards a hospital)", "desc_fa": "تیراندازی نیروهای امنیتی در ایلام (به سمت بیمارستان)", "coords": [33.6368095, 46.4218413], "link": "https://x.com/GhonchehAzad/status/2007917698450423879", "date": "2026-01-04", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2007919876661502077" },
+                { "id": 38, "verified": true, "desc": "Security forces firing at protesters outside government complex in Arkavaz, Malekshahi County, Ilam Province (reported 4-8 killed, 30+ injured)", "desc_fa": "تیراندازی نیروهای امنیتی به معترضان مقابل فرمانداری ارکواز ملکشاهی ایلام (گزارش ۴-۸ کشته)", "coords": [33.39237, 46.59871], "link": "https://x.com/Mitch_Ulrich/status/2007667072223064529", "date": "2026-01-04", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2007883928263417878" },
+                { "id": 39, "verified": true, "desc": "Clashes with security forces at Imam Hussein Square in Shazand, Markazi Province", "desc_fa": "درگیری با نیروهای امنیتی در میدان امام حسین شازند", "coords": [33.93184, 49.40307], "link": "https://x.com/Mitch_Ulrich/status/2007945788392124873", "date": "2026-01-04", "size": "medium", "alt": null },
+                { "id": 40, "verified": true, "desc": "Group of protesters singing “Ey Iran” in Sari, Mazandaran Province", "desc_fa": "گروهی از معترضان در حال خواندن سرود «ای ایران» در ساری، استان مازندران", "coords": [36.56332, 53.06009], "link": "https://x.com/GhonchehAzad/status/2008115146837860529", "date": "2026-01-05", "size": "medium", "alt": null },
+                { "id": 41, "verified": true, "desc": "Group chanting “Freedom, Freedom, Freedom” in Yasuj, south-western Kohgiluyeh-Boyerahmad Province", "desc_fa": "شعار «آزادی آزادی آزادی» گروهی از معترضان در یاسوج", "coords": [30.66824, 51.58796], "link": "https://x.com/GhonchehAzad/status/2008155320590487813", "date": "2026-01-05", "size": "big", "alt": null },
+                { "id": 42, "verified": true, "desc": "Group chanting “Death to Khamenei” and “Death to the Dictator” near Haft Hoz Square, east Tehran", "desc_fa": "شعار «مرگ بر خامنه‌ای» و «مرگ بر دیکتاتور» در نزدیکی میدان هفت حوض، شرق تهران", "coords": [35.73303, 51.49448], "link": "https://x.com/GhonchehAzad/status/2008244314909143308", "date": "2026-01-05", "size": "big", "alt": "https://x.com/cicikhanoom/status/2008202048895062308, https://x.com/GhonchehAzad/status/2008244539858055247, https://x.com/GhonchehAzad/status/2008256556396339598, https://x.com/GhonchehAzad/status/2008256732133544164, https://x.com/GhonchehAzad/status/2008256823032516967" }
+            ], []);
 
-            const incidents = useMemo(() => rawIncidents.map(i => ({
-                ...i,
-                link: i.link.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, ''),
-                alt: i.alt ? i.alt.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, '').split(',')[0].trim() : null
-            })), []);
+            // --- Unverified Data ---
+            const unverifiedIncidents = useMemo(() => [
+                { "id": "u1", "verified": false, "desc": "Protesters marching on Ferdowsi Street near Sar Manouchehri", "desc_fa": "معترضان در حال راهپیمایی در خیابان فردوسی نزدیک سر منوچهری", "coords": [35.6892, 51.3890], "link": "https://x.com/Vahid/status/2005629230886072346", "date": "2025-12-30", "size": "medium", "alt": null },
+                { "id": "u2", "verified": false, "desc": "Gathering and protests outside Ghasr shopping center", "desc_fa": "تجمع و اعتراضات خارج از مرکز خرید قصر", "coords": [26.9584, 56.2716], "link": "https://x.com/Vahid/status/2005667136111571200", "date": "2025-12-30", "size": "medium", "alt": null },
+                { "id": "u3", "verified": false, "desc": "Protests and clashes in Marlik", "desc_fa": "اعتراضات و درگیری‌ها در مارلیک", "coords": [35.6995, 50.9822], "link": "https://x.com/Vahid/status/2005666037942136865", "date": "2025-12-30", "size": "medium", "alt": null },
+                { "id": "u4", "verified": false, "desc": "Student gathering and chants of 'Death to Khamenei' at dorms", "desc_fa": "تجمع دانشجویی و شعارهای 'مرگ بر خامنه‌ای' در خوابگاه‌ها", "coords": [35.8060, 51.3938], "link": "https://x.com/Vahid/status/2006508642191945737", "date": "2026-01-01", "size": "medium", "alt": null },
+                { "id": "u5", "verified": false, "desc": "Woman detained by security forces", "desc_fa": "زن توسط نیروهای امنیتی بازداشت شد", "coords": [35.7283, 51.4931], "link": "https://x.com/Vahid/status/2007146339910726125", "date": "2026-01-02", "size": "small", "alt": null },
+                { "id": "u6", "verified": false, "desc": "Woman detained by security forces near Old Darayi Street (15 Khordad) towards Soumeh Blvd", "desc_fa": "زن توسط نیروهای امنیتی نزدیک خیابان درایی قدیمی (۱۵ خرداد) به سمت بلوار سومه بازداشت شد", "coords": [36.2133, 58.7958], "link": "https://x.com/Vahid/status/2007193627454517691", "date": "2026-01-02", "size": "small", "alt": null },
+                { "id": "u7", "verified": false, "desc": "Chants of 'No pain is just the hijab, you took our lives!'", "desc_fa": "شعارهای 'درد ما فقط حجاب نیست، جان ما را گرفتید!'", "coords": [35.7424, 51.5340], "link": "https://x.com/Vahid/status/2007239451777610050", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": "u8", "verified": false, "desc": "Protesters sitting in front of security forces, blocking the street", "desc_fa": "معترضان در مقابل نیروهای امنیتی نشسته، خیابان را مسدود کرده‌اند", "coords": [29.5926, 52.5837], "link": "https://x.com/Vahid/status/2007427222697566259", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u9", "verified": false, "desc": "Chants of 'Death to the dictator'", "desc_fa": "شعارهای 'مرگ بر دیکتاتور'", "coords": [35.6379, 51.4050], "link": "https://x.com/Vahid/status/2007487965828915655", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": "u10", "verified": false, "desc": "Woman with sign 'I'm not a rioter' amid protesters pulling down flags", "desc_fa": "زن با پلاکارد 'من آشوبگر نیستم' در میان معترضان که پرچم‌ها را پایین می‌کشند", "coords": [35.6379, 51.4050], "link": "https://x.com/Vahid/status/2007489750794744143", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": "u11", "verified": false, "desc": "Chants of 'Death to Khamenei' on Rahnamai Street", "desc_fa": "شعارهای 'مرگ بر خامنه‌ای' در خیابان راهنمایی", "coords": [36.2605, 59.6168], "link": "https://x.com/Vahid/status/2007497928928309468", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": "u12", "verified": false, "desc": "Protesters in front of governorate building", "desc_fa": "معترضان در مقابل ساختمان استانداری", "coords": [29.1989, 54.3278], "link": "https://x.com/Vahid/status/2007536991819432354", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u13", "verified": false, "desc": "Gathering and chants", "desc_fa": "تجمع و شعارها", "coords": [30.3500, 50.7500], "link": "https://x.com/Vahid/status/2007541186274439265", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u14", "verified": false, "desc": "Chants of 'This is the last battle, Pahlavi will return!' and 'Long live the Shah!'", "desc_fa": "شعارهای 'این آخرین نبرده، پهلوی بر می‌گرده!' و 'جاوید شاه!'", "coords": [35.7316, 51.4940], "link": "https://x.com/Vahid/status/2007518452102381897", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u15", "verified": false, "desc": "Chants of 'Death to the dictator' at second square", "desc_fa": "شعارهای 'مرگ بر دیکتاتور' در میدان دوم", "coords": [35.7424, 51.5340], "link": "https://x.com/Vahid/status/2007515360451555718", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": "u16", "verified": false, "desc": "Chants of 'This is the last battle, Pahlavi will return!' and 'Long live the Shah!'", "desc_fa": "شعارهای 'این آخرین نبرده، پهلوی بر می‌گرده!' و 'جاوید شاه!'", "coords": [35.7316, 51.4940], "link": "https://x.com/Vahid/status/2007516003002130533", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u17", "verified": false, "desc": "Chants of 'This is the last battle, Pahlavi will return!' amid breaking glass at Bassij base", "desc_fa": "شعارهای 'این آخرین نبرده، پهلوی بر می‌گرده!' در میان شکستن شیشه در پایگاه بسیج", "coords": [35.7283, 51.4931], "link": "https://x.com/Vahid/status/2007521713920057641", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u18", "verified": false, "desc": "Chants of 'Death to the dictator' at Zafarqandi entrance to Baqeri highway", "desc_fa": "شعارهای 'مرگ بر دیکتاتور' در ورودی ظفرقندی به بزرگراه باقری", "coords": [35.7330, 51.4945], "link": "https://x.com/Vahid/status/2007524799812436236", "date": "2026-01-03", "size": "small", "alt": null },
+                { "id": "u19", "verified": false, "desc": "Gathering and chants", "desc_fa": "تجمع و شعارها", "coords": [35.7424, 51.5340], "link": "https://x.com/Vahid/status/2007526668122849775", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u20", "verified": false, "desc": "Chants of 'Death to the dictator' amid pulling down signs and blocking road", "desc_fa": "شعارهای 'مرگ بر دیکتاتور' در میان پایین کشیدن علائم و مسدود کردن جاده", "coords": [35.7283, 51.4931], "link": "https://x.com/Vahid/status/2007529249905738016", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u21", "verified": false, "desc": "Gathering and chants", "desc_fa": "تجمع و شعارها", "coords": [35.6892, 51.3890], "link": "https://x.com/Vahid/status/2007532441246818733", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u22", "verified": false, "desc": "Gathering and chants", "desc_fa": "تجمع و شعارها", "coords": [37.2682, 49.5891], "link": "https://x.com/Vahid/status/2007533623667495039", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u23", "verified": false, "desc": "Chants of 'This is the last battle, Pahlavi will return!' and 'Long live the Shah!'", "desc_fa": "شعارهای 'این آخرین نبرده، پهلوی بر می‌گرده!' و 'جاوید شاه!'", "coords": [36.2605, 59.6168], "link": "https://x.com/Vahid/status/2007545010288214076", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u24", "verified": false, "desc": "Chants of 'This police is the killer itself!'", "desc_fa": "شعارهای 'این پلیس خودش قاتل است!'", "coords": [36.2605, 59.6168], "link": "https://x.com/Vahid/status/2007553960912277782", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u25", "verified": false, "desc": "Chants of 'Until the mullah is buried, this homeland won't be a homeland!'", "desc_fa": "شعارهای 'تا آخوند کفن نشه این وطن وطن نشه!'", "coords": [36.2605, 59.6168], "link": "https://x.com/Vahid/status/2007557144397406306", "date": "2026-01-03", "size": "medium", "alt": null },
+                { "id": "u26", "verified": false, "desc": "Security forces firing tear gas at protesters", "desc_fa": "نیروهای امنیتی گاز اشک‌آور به سمت معترضان شلیک می‌کنند", "coords": [32.6539, 51.6660], "link": "https://x.com/Vahid/status/2008240478656098516", "date": "2026-01-05", "size": "medium", "alt": null },
+                { "id": "u27", "verified": false, "desc": "Security forces attacking protesters in hospital", "desc_fa": "نیروهای امنیتی به معترضان در بیمارستان حمله می‌کنند", "coords": [33.6384, 46.4226], "link": "https://x.com/Vahid/status/2007917006776094736", "date": "2026-01-04", "size": "small", "alt": null },
+                { "id": "u28", "verified": false, "desc": "Graffiti on overpass: 'Until the mullah is buried, this homeland won't be a homeland!'", "desc_fa": "گرافیتی روی پل هوایی: 'تا آخوند کفن نشه این وطن وطن نشه!'", "coords": [35.7600, 51.4300], "link": "https://x.com/Vahid/status/2008328901148205280", "date": "2026-01-05", "size": "small", "alt": null }
+            ], []);
+
+            const allIncidents = useMemo(() => {
+                const combined = showUnverified ? [...verifiedIncidents, ...unverifiedIncidents] : verifiedIncidents;
+                return combined.map(i => ({
+                    ...i,
+                    link: i.link.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, ''),
+                    alt: i.alt ? i.alt.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, '').split(',')[0].trim() : null
+                }));
+            }, [verifiedIncidents, unverifiedIncidents, showUnverified]);
 
             // --- Timeline Data ---
             const { uniqueDates, minDate, maxDate } = useMemo(() => {
-                const dates = [...new Set(incidents.map(i => i.date))].sort();
+                const dates = [...new Set(allIncidents.map(i => i.date))].sort();
                 return { uniqueDates: dates, minDate: dates[0], maxDate: dates[dates.length - 1] };
-            }, [incidents]);
+            }, [allIncidents]);
 
             // Filter logic
             const displayedIncidents = useMemo(() => {
-                if (!dateFilter) return incidents;
-                return incidents.filter(i => i.date === dateFilter);
-            }, [incidents, dateFilter]);
+                if (!dateFilter) return allIncidents;
+                return allIncidents.filter(i => i.date === dateFilter);
+            }, [allIncidents, dateFilter]);
 
             // Playback logic
             useEffect(() => {
@@ -370,7 +415,7 @@
                                 return currentDate;
                             }
                         });
-                    }, 1500); // 1.5s per day for better readability
+                    }, 1500);
                 }
                 return () => clearInterval(interval);
             }, [isPlaying, uniqueDates]);
@@ -419,8 +464,9 @@
                 markersRef.current.forEach(marker => marker.remove());
                 markersRef.current = [];
 
-                const getColor = (size) => {
-                    switch (size) {
+                const getColor = (incident) => {
+                    if (!incident.verified) return '#9CA3AF'; // Grey-400 for unverified
+                    switch (incident.size) {
                         case 'big': return '#EF4444';
                         case 'medium': return '#F97316';
                         default: return '#FACC15'; 
@@ -435,7 +481,7 @@
                 };
 
                 displayedIncidents.forEach(incident => {
-                    const color = getColor(incident.size);
+                    const color = getColor(incident);
                     const iconSize = getScale(incident.size);
                     const iconHtml = `
                         <div class="relative group flex items-center justify-center transition-transform hover:scale-110 duration-200" style="width: ${iconSize}px; height: ${iconSize}px;">
@@ -470,7 +516,7 @@
 
                     markersRef.current.push(marker);
                 });
-            }, [isMapReady, displayedIncidents, lang]); // Add lang to deps to update tooltip text
+            }, [isMapReady, displayedIncidents, lang]);
 
             // --- Handle Layer Switching ---
             useEffect(() => {
@@ -496,7 +542,6 @@
                 setLang(prev => prev === 'en' ? 'fa' : 'en');
             };
 
-            // Reset Map View & Close Panels
             const resetView = () => {
                 if (mapInstanceRef.current) {
                     mapInstanceRef.current.flyTo([32.4279, 53.6880], 5, { duration: 1.5 });
@@ -540,11 +585,18 @@
                                 <span className={`w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-sm ${lang === 'fa' ? 'ml-2' : 'mr-2'}`}></span>
                                 {t.smallGroup}
                             </div>
+                            {/* Unverified Legend Item */}
+                            {showUnverified && (
+                                <div className="flex items-center text-xs font-medium drop-shadow-md animate-fade-in">
+                                    <span className={`w-2.5 h-2.5 rounded-full bg-gray-400 shadow-sm ${lang === 'fa' ? 'ml-2' : 'mr-2'}`}></span>
+                                    {t.unverified}
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Top Controls (Buttons) */}
-                    <div className={`absolute top-4 md:top-6 z-[1000] flex flex-col space-y-2 md:space-y-3 ${lang === 'fa' ? 'left-4 md:left-6 items-start' : 'right-4 md:right-6 items-end'}`}>
+                    <div className={`absolute top-4 md:top-6 z-[1000] flex flex-col space-y-2 md:space-y-3 items-end ${lang === 'fa' ? 'left-4 md:left-6' : 'right-4 md:right-6'}`}>
                         <div className={`backdrop-blur-xl shadow-xl rounded-full p-1 md:p-1.5 border flex items-center space-x-2 transition-colors duration-300 ${glassClass} ${lang === 'fa' ? 'space-x-reverse' : ''}`}>
                             <button onClick={toggleTheme} className={`p-1.5 md:p-2.5 rounded-full transition-all duration-200 ${glassHover}`} title="Toggle Light/Dark">
                                 {activeLayer === 'light' ? <IconSun className="w-4 h-4 md:w-5 md:h-5" /> : <IconMoon className="w-4 h-4 md:w-5 md:h-5" />}
@@ -563,6 +615,14 @@
                         >
                             <IconChart className="w-4 h-4 md:w-5 md:h-5" />
                             <span>{t.showChart}</span>
+                        </button>
+
+                         <button 
+                            onClick={() => setShowUnverified(!showUnverified)} 
+                            className={`backdrop-blur-xl shadow-xl rounded-full px-3 py-1.5 md:px-4 md:py-2 border flex items-center space-x-2 text-xs md:text-sm font-semibold transition-all duration-200 ${glassClass} ${glassHover} ${lang === 'fa' ? 'space-x-reverse font-[Vazirmatn]' : ''}`}
+                        >
+                            <IconAlert className="w-4 h-4 md:w-5 md:h-5" />
+                            <span>{showUnverified ? t.hideUnverified : t.showUnverified}</span>
                         </button>
                     </div>
 
@@ -610,7 +670,7 @@
                     </div>
 
                     {/* Graph Modal */}
-                    {showGraph && <ProtestGraph data={incidents} onClose={() => setShowGraph(false)} isDarkMode={isDarkMode} t={t} lang={lang} />}
+                    {showGraph && <ProtestGraph data={allIncidents} onClose={() => setShowGraph(false)} isDarkMode={isDarkMode} t={t} lang={lang} />}
 
                     {/* Details Panel */}
                     {selectedIncident && (
