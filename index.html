@@ -55,16 +55,10 @@
             from { transform: translateX(-100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
-        @keyframes slide-up {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
         
         /* Responsive Animation Classes */
         .animate-panel-desktop-ltr { animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .animate-panel-desktop-rtl { animation: slide-in-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        /* Mobile panel animation handled by JS/Drag now, initial slide up only */
-        .animate-panel-mobile-enter { animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes fade-in {
             from { opacity: 0; transform: scale(0.95); }
@@ -138,12 +132,12 @@
             color: #1f2937;
             padding: 8px 12px;
             width: max-content;
-            max-width: min(300px, 80vw); /* Reduced max-width for mobile */
+            max-width: min(300px, 80vw); 
             white-space: normal;
             text-align: center;
             line-height: 1.4;
             transition: all 0.3s ease;
-            pointer-events: none; /* Let touches pass through to map */
+            pointer-events: none; 
         }
         .leaflet-tooltip-pane .custom-tooltip::before {
             border-top-color: rgba(255, 255, 255, 0.95);
@@ -180,7 +174,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo, useCallback } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
 
         // --- Icons ---
         const IconSun = ({ className = "w-5 h-5" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>;
@@ -407,7 +401,7 @@
                 }
             }, []);
 
-             // --- Data Definitions (Same as provided) ---
+             // --- Data Definitions (Updated with 61 verified and 51 unverified) ---
             const verifiedIncidents = useMemo(() => [
                 { "id": 1, "verified": true, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "desc_fa": "عقب راندن نیروهای پلیس و امنیتی توسط معترضان در خیابان جمهوری تهران", "coords": [35.6927461, 51.4255329], "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null },
                 { "id": 2, "verified": true, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "desc_fa": "تجمع معترضان مقابل مرکز خرید قصر در جزیره قشم", "coords": [26.968793, 56.075395], "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null },
@@ -465,7 +459,11 @@
                 { "id": 54, "verified": true, "desc": "Police van on fire in Ilam", "desc_fa": "ون پلیس در آتش در ایلام", "coords": [33.6426, 46.4230], "link": "https://x.com/GeoConfirmed/status/2008623128449098145", "date": "2026-01-06", "size": "medium", "alt": null },
                 { "id": 55, "verified": true, "desc": "Security forces opening fire on protesters in Neyriz", "desc_fa": "تیراندازی نیروهای امنیتی به سمت معترضان در نی‌ریز", "coords": [29.1999, 54.3273], "link": "https://x.com/GeoConfirmed/status/2008625573719920750", "date": "2026-01-06", "size": "medium", "alt": "https://x.com/Vahid/status/2008638205503967507" },
                 { "id": 56, "verified": true, "desc": "Security forces fire tear gas inside the courtyard of Sina Hospital in Tehran", "desc_fa": "شلیک گاز اشک‌آور توسط نیروهای امنیتی داخل حیاط بیمارستان سینا تهران", "coords": [35.686469, 51.412224], "link": "https://x.com/Shayan86/status/2008729911008391483", "date": "2026-01-06", "size": "medium", "alt": "https://x.com/FaytuksNetwork/status/2008531821819212145" },
-                { "id": 57, "verified": true, "desc": "Protesters gather and security forces fire tear gas near 17 Shahrivar Square in Mashhad", "desc_fa": "تجمع معترضان و شلیک گاز اشک‌آور توسط نیروهای امنیتی نزدیک میدان ۱۷ شهریور مشهد", "coords": [36.2765, 59.6152], "link": "https://x.com/Shayan86/status/2008734617864728936", "date": "2026-01-06", "size": "big", "alt": "https://x.com/Shayan86/status/2008738771915993246" }
+                { "id": 57, "verified": true, "desc": "Protesters gather and security forces fire tear gas near 17 Shahrivar Square in Mashhad", "desc_fa": "تجمع معترضان و شلیک گاز اشک‌آور توسط نیروهای امنیتی نزدیک میدان ۱۷ شهریور مشهد", "coords": [36.2765, 59.6152], "link": "https://x.com/Shayan86/status/2008734617864728936", "date": "2026-01-06", "size": "big", "alt": "https://x.com/Shayan86/status/2008738771915993246" },
+                { "id": 58, "verified": true, "desc": "Group gathered in Bojnourd, north-eastern North Khorasan Province", "desc_fa": "تجمع گروهی در بجنورد، شمال شرقی استان خراسان شمالی", "coords": [37.4765, 57.3310], "link": "https://x.com/GhonchehAzad/status/2008837886049931743", "date": "2026-01-07", "size": "medium", "alt": null },
+                { "id": 59, "verified": true, "desc": "Group gathered in Neyshabour, north-eastern Khorasan Razavi Province", "desc_fa": "تجمع گروهی در نیشابور، شمال شرقی استان خراسان رضوی", "coords": [36.2092, 58.7954], "link": "https://x.com/GhonchehAzad/status/2008835977671025090", "date": "2026-01-07", "size": "big", "alt": null },
+                { "id": 60, "verified": true, "desc": "Protesters in the port city of Bandar-Abbas, Hormozgan Province", "desc_fa": "معترضان در شهر بندری بندرعباس، استان هرمزگان", "coords": [27.1795, 56.2755], "link": "https://x.com/GhonchehAzad/status/2008844406569476504", "date": "2026-01-07", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2008846671866900684" },
+                { "id": 61, "verified": true, "desc": "Shooting at protesters in Kermanshah", "desc_fa": "تیراندازی به معترضان در کرمانشاه", "coords": [34.3276, 47.0770], "link": "https://x.com/FSeifikaran/status/2008843744980967763", "date": "2026-01-07", "size": "medium", "alt": null }
             ], []);
 
             // --- Unverified Data (Same as provided) ---
@@ -517,7 +515,10 @@
                 { "id": "u45", "verified": false, "desc": "Video shows police waving at demonstrators", "desc_fa": "ویدیو نشان می‌دهد پلیس برای تظاهرکنندگان دست تکان می‌دهد", "coords": [32.9927, 47.4198], "link": "https://x.com/FaytuksNetwork/status/2008576732308418982", "date": "2026-01-06", "size": "small", "alt": "https://x.com/FaytuksNetwork/status/2008588742257430636" },
                 { "id": "u46", "verified": false, "desc": "Car drove into group of security-force motorcyclists", "desc_fa": "خودرو به گروهی از موتورسواران نیروهای امنیتی برخورد کرد", "coords": [29.5926, 52.5837], "link": "https://x.com/FaytuksNetwork/status/2008586294914675140", "date": "2026-01-06", "size": "medium", "alt": null },
                 { "id": "u47", "verified": false, "desc": "Police van on fire", "desc_fa": "ون پلیس در آتش", "coords": [33.6426, 46.4230], "link": "https://x.com/FaytuksNetwork/status/2008623128449098145", "date": "2026-01-06", "size": "medium", "alt": null },
-                { "id": "u48", "verified": false, "desc": "Security forces opening fire on protesters", "desc_fa": "نیروهای امنیتی به سمت معترضان آتش گشودند", "coords": [29.1999, 54.3273], "link": "https://x.com/FaytuksNetwork/status/2008625573719920750", "date": "2026-01-06", "size": "big", "alt": "https://x.com/Vahid/status/2008638205503967507" }
+                { "id": "u48", "verified": false, "desc": "Security forces opening fire on protesters", "desc_fa": "نیروهای امنیتی به سمت معترضان آتش گشودند", "coords": [29.1999, 54.3273], "link": "https://x.com/FaytuksNetwork/status/2008625573719920750", "date": "2026-01-06", "size": "big", "alt": "https://x.com/Vahid/status/2008638205503967507" },
+                { "id": "u49", "verified": false, "desc": "Chants in protests", "desc_fa": "شعار دادن در اعتراضات", "coords": [35.6892, 51.3890], "link": "https://x.com/Vahid/status/2008615094436196660", "date": "2026-01-06", "size": "medium", "alt": null },
+                { "id": "u50", "verified": false, "desc": "Gathering and chants", "desc_fa": "تجمع و شعارها", "coords": [27.1795, 56.2755], "link": "https://x.com/Vahid/status/2008839633468326243", "date": "2026-01-07", "size": "medium", "alt": "https://x.com/Vahid/status/2008840352132968706" },
+                { "id": "u51", "verified": false, "desc": "Chants of \"Merchant with honor, support, support!\"", "desc_fa": "شعارهای \"بازاری با غیرت، حمایت، حمایت\"", "coords": [30.2839, 57.0834], "link": "https://x.com/Vahid/status/2008844818466959368", "date": "2026-01-07", "size": "medium", "alt": "https://x.com/Vahid/status/2008845102224158769, https://x.com/Vahid/status/2008848486054420683, https://x.com/Vahid/status/2008848787469693231" }
             ], []);
 
             const allIncidents = useMemo(() => {
