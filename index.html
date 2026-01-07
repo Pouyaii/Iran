@@ -55,10 +55,16 @@
             from { transform: translateX(-100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+        @keyframes slide-up {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
         
         /* Responsive Animation Classes */
         .animate-panel-desktop-ltr { animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .animate-panel-desktop-rtl { animation: slide-in-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        /* Mobile panel animation handled by JS/Drag now, initial slide up only */
+        .animate-panel-mobile-enter { animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes fade-in {
             from { opacity: 0; transform: scale(0.95); }
@@ -132,12 +138,12 @@
             color: #1f2937;
             padding: 8px 12px;
             width: max-content;
-            max-width: min(300px, 80vw); 
+            max-width: min(300px, 80vw); /* Reduced max-width for mobile */
             white-space: normal;
             text-align: center;
             line-height: 1.4;
             transition: all 0.3s ease;
-            pointer-events: none; 
+            pointer-events: none; /* Let touches pass through to map */
         }
         .leaflet-tooltip-pane .custom-tooltip::before {
             border-top-color: rgba(255, 255, 255, 0.95);
@@ -174,7 +180,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
+        const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
         // --- Icons ---
         const IconSun = ({ className = "w-5 h-5" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>;
@@ -401,7 +407,7 @@
                 }
             }, []);
 
-             // --- Data Definitions (Updated with 61 verified and 51 unverified) ---
+             // --- Data Definitions (Updated with 66 verified and 51 unverified) ---
             const verifiedIncidents = useMemo(() => [
                 { "id": 1, "verified": true, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "desc_fa": "عقب راندن نیروهای پلیس و امنیتی توسط معترضان در خیابان جمهوری تهران", "coords": [35.6927461, 51.4255329], "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null },
                 { "id": 2, "verified": true, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "desc_fa": "تجمع معترضان مقابل مرکز خرید قصر در جزیره قشم", "coords": [26.968793, 56.075395], "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null },
@@ -460,14 +466,15 @@
                 { "id": 55, "verified": true, "desc": "Security forces opening fire on protesters in Neyriz", "desc_fa": "تیراندازی نیروهای امنیتی به سمت معترضان در نی‌ریز", "coords": [29.1999, 54.3273], "link": "https://x.com/GeoConfirmed/status/2008625573719920750", "date": "2026-01-06", "size": "medium", "alt": "https://x.com/Vahid/status/2008638205503967507" },
                 { "id": 56, "verified": true, "desc": "Security forces fire tear gas inside the courtyard of Sina Hospital in Tehran", "desc_fa": "شلیک گاز اشک‌آور توسط نیروهای امنیتی داخل حیاط بیمارستان سینا تهران", "coords": [35.686469, 51.412224], "link": "https://x.com/Shayan86/status/2008729911008391483", "date": "2026-01-06", "size": "medium", "alt": "https://x.com/FaytuksNetwork/status/2008531821819212145" },
                 { "id": 57, "verified": true, "desc": "Protesters gather and security forces fire tear gas near 17 Shahrivar Square in Mashhad", "desc_fa": "تجمع معترضان و شلیک گاز اشک‌آور توسط نیروهای امنیتی نزدیک میدان ۱۷ شهریور مشهد", "coords": [36.2765, 59.6152], "link": "https://x.com/Shayan86/status/2008734617864728936", "date": "2026-01-06", "size": "big", "alt": "https://x.com/Shayan86/status/2008738771915993246" },
-                { "id": 58, "verified": true, "desc": "Group gathered in Bojnourd, north-eastern North Khorasan Province", "desc_fa": "تجمع گروهی در بجنورد، شمال شرقی استان خراسان شمالی", "coords": [37.4765, 57.3310], "link": "https://x.com/GhonchehAzad/status/2008837886049931743", "date": "2026-01-07", "size": "medium", "alt": null },
+                { "id": 58, "verified": true, "desc": "Group gathered in Bojnourd, north-eastern North Khorasan Province", "desc_fa": "تجمع گروهی در بجنورد، شمال شرقی استان خراسان شمالی", "coords": [37.4765, 57.3310], "link": "https://x.com/GhonchehAzad/status/2008837886049931743", "date": "2026-01-07", "size": "big", "alt": null },
                 { "id": 59, "verified": true, "desc": "Group gathered with chants \"Zehi khiyal batel, Khamenei qatel\" in Neyshabour, north-eastern Khorasan Razavi Province", "desc_fa": "تجمع گروهی با شعار «زهی خیال باطل، خامنه‌ای قاتل» در نیشابور، شمال شرقی استان خراسان رضوی", "coords": [36.2092, 58.7954], "link": "https://x.com/GhonchehAzad/status/2008835977671025090", "date": "2026-01-07", "size": "big", "alt": "https://x.com/FSeifikaran/status/2008838232554013044" },
                 { "id": 60, "verified": true, "desc": "Protesters in the port city of Bandar-Abbas, Hormozgan Province", "desc_fa": "معترضان در شهر بندری بندرعباس، استان هرمزگان", "coords": [27.1795, 56.2755], "link": "https://x.com/GhonchehAzad/status/2008844406569476504", "date": "2026-01-07", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2008846671866900684" },
                 { "id": 61, "verified": true, "desc": "Shooting at protesters in Kermanshah", "desc_fa": "تیراندازی به معترضان در کرمانشاه", "coords": [34.3276, 47.0770], "link": "https://x.com/FSeifikaran/status/2008843744980967763", "date": "2026-01-07", "size": "medium", "alt": null },
                 { "id": 62, "verified": true, "desc": "Protesters in the religious city of Mashhad chant in favour of pre-1979 Pahlavi monarchy", "desc_fa": "شعار معترضان در شهر مذهبی مشهد در حمایت از سلطنت پهلوی", "coords": [36.2605, 59.6168], "link": "https://x.com/GhonchehAzad/status/2008863369722528197", "date": "2026-01-07", "size": "big", "alt": null },
                 { "id": 63, "verified": true, "desc": "Protesters chanting against Iran’s Supreme Leader in Gilangharb, western Kermanshah Province", "desc_fa": "شعار معترضان علیه رهبر جمهوری اسلامی در گیلانغرب، استان کرمانشاه", "coords": [34.1415, 45.9182], "link": "https://x.com/GhonchehAzad/status/2008939384913940552", "date": "2026-01-07", "size": "big", "alt": null },
                 { "id": 64, "verified": true, "desc": "Protesters in Abadan, Khuzestan Province", "desc_fa": "معترضان در آبادان، استان خوزستان", "coords": [30.3430, 48.2810], "link": "https://x.com/GhonchehAzad/status/2008924692875301053", "date": "2026-01-07", "size": "big", "alt": null },
-                { "id": 65, "verified": true, "desc": "Group of protesters in Tehran’s Yaft Abad", "desc_fa": "گروهی از معترضان در یافت‌آباد تهران", "coords": [35.6625, 51.3281], "link": "https://x.com/GhonchehAzad/status/2008908712711172481", "date": "2026-01-07", "size": "medium", "alt": null }
+                { "id": 65, "verified": true, "desc": "Group of protesters in Tehran’s Yaft Abad", "desc_fa": "گروهی از معترضان در یافت‌آباد تهران", "coords": [35.6625, 51.3281], "link": "https://x.com/GhonchehAzad/status/2008908712711172481", "date": "2026-01-07", "size": "medium", "alt": null },
+                { "id": 66, "verified": true, "desc": "Group gathered with chants “This is the last battle, Pahlavi will return” in Aligoudarz, western Lorestan Province", "desc_fa": "تجمع گروهی با شعار «این آخرین نبرده، پهلوی برمی‌گرده» در الیگودرز، استان لرستان", "coords": [33.4009, 49.6949], "link": "https://x.com/GhonchehAzad/status/2008987431656411199", "date": "2026-01-07", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2008987618667860232" }
             ], []);
 
             // --- Unverified Data (Same as provided) ---
