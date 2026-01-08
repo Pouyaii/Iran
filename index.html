@@ -210,7 +210,7 @@
                 showingAll: "Showing All Events",
                 all: "All",
                 chartTitle: "Protest Activity Over Time",
-                chartNote: "Note: Date reflects date of tweet, not necessarily the date of the incident.",
+                chartNote: "Note: Date reflects date of tweet, not necessarily the date of the incident. Verified totals for the most recent day can look lower while new footage is still being confirmed.",
                 total: "Total",
                 large: "Large",
                 medium: "Medium",
@@ -240,7 +240,7 @@
                 showingAll: "نمایش همه رویدادها",
                 all: "همه",
                 chartTitle: "فعالیت اعتراضات در طول زمان",
-                chartNote: "توجه: تاریخ منعکس کننده تاریخ توییت است، نه لزوماً تاریخ حادثه.",
+                chartNote: "توجه: تاریخ منعکس کننده تاریخ توییت است، نه لزوماً تاریخ حادثه. آمار تأییدشده برای جدیدترین روز ممکن است کمتر به نظر برسد چون تأیید ویدیوهای تازه زمان می‌برد.",
                 total: "کل",
                 large: "بزرگ",
                 medium: "متوسط",
@@ -304,7 +304,7 @@
             );
         };
 
-        const ProtestGraph = ({ data, onClose, isDarkMode, t, lang }) => {
+        const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified }) => {
             const processedData = useMemo(() => {
                 const dates = [...new Set(data.map(d => d.date))].sort();
                 const series = dates.map(date => {
@@ -343,6 +343,17 @@
                             <div>
                                 <h2 className={`text-lg md:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>{t.chartTitle}</h2>
                                 <p className={`text-xs text-gray-400 italic mt-1 ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>{t.chartNote}</p>
+                                <div className={`mt-3 flex flex-wrap items-center gap-2 ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
+                                    <button
+                                        onClick={onToggleUnverified}
+                                        className={`px-3 py-1.5 rounded-full border text-[11px] md:text-xs font-semibold transition-all duration-200 active:scale-95 ${isDarkMode ? 'bg-gray-800/70 border-gray-600 text-gray-200 hover:bg-gray-700/80' : 'bg-white/80 border-gray-200 text-gray-700 hover:bg-white'}`}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <IconAlert className="w-4 h-4" />
+                                            <span>{showUnverified ? t.hideUnverified : t.showUnverified}</span>
+                                        </span>
+                                    </button>
+                                </div>
                                 <div className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] md:text-xs font-semibold ${textColor} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
                                     <div className="flex items-center gap-2">
                                         <span className="w-6 border-t-2 border-blue-400"></span>
@@ -360,10 +371,12 @@
                                         <span className="w-6 border-t-2 border-yellow-400"></span>
                                         <span>{t.small}</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-6 border-t-2 border-dotted border-gray-400"></span>
-                                        <span>{t.unverified}</span>
-                                    </div>
+                                    {showUnverified && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-6 border-t-2 border-dotted border-gray-400"></span>
+                                            <span>{t.unverified}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}><IconX className="w-6 h-6" /></button>
@@ -377,7 +390,9 @@
                                 <path d={createPath('big')} fill="none" stroke="#EF4444" strokeWidth="2" strokeDasharray="5 5" />
                                 <path d={createPath('medium')} fill="none" stroke="#F97316" strokeWidth="2" strokeDasharray="3 3" />
                                 <path d={createPath('small')} fill="none" stroke="#FACC15" strokeWidth="2" />
-                                <path d={createPath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2" strokeDasharray="2 2" />
+                                {showUnverified && (
+                                    <path d={createPath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2" strokeDasharray="2 2" />
+                                )}
                                 
                                 {series.map((p, i) => <circle key={i} cx={getX(i)} cy={getY(p.total)} r="3" fill="#60A5FA" />)}
                                 {series.map((p, i) => <text key={i} x={getX(i)} y={height - 5} fontSize="8" textAnchor="middle" fill={isDarkMode ? "#9CA3AF" : "#6B7280"}>{p.date.slice(5)}</text>)}
@@ -974,7 +989,17 @@
                     </div>
 
                     {/* Graph Modal */}
-                    {showGraph && <ProtestGraph data={allIncidents} onClose={() => setShowGraph(false)} isDarkMode={isDarkMode} t={t} lang={lang} />}
+                    {showGraph && (
+                        <ProtestGraph
+                            data={allIncidents}
+                            onClose={() => setShowGraph(false)}
+                            isDarkMode={isDarkMode}
+                            t={t}
+                            lang={lang}
+                            showUnverified={showUnverified}
+                            onToggleUnverified={() => setShowUnverified(!showUnverified)}
+                        />
+                    )}
 
                     {/* Details Panel - Draggable & Resizable on Mobile */}
                     {selectedIncident && (
