@@ -210,7 +210,7 @@
                 showingAll: "Showing All Events",
                 all: "All",
                 chartTitle: "Protest Activity Over Time",
-                chartNote: "Note: Date reflects date of tweet, not necessarily the date of the incident. Verified totals for the most recent day may appear lower while new footage is still being confirmed.",
+                chartNote: "Note: Date reflects date of tweet, not necessarily the date of the incident. Verified totals for the most recent day can look lower while new footage is still being confirmed.",
                 total: "Total",
                 large: "Large",
                 medium: "Medium",
@@ -304,15 +304,6 @@
             );
         };
 
-        const formatDateWithDay = (dateString, locale) => {
-            const parsedDate = new Date(`${dateString}T00:00:00Z`);
-            if (Number.isNaN(parsedDate.getTime())) {
-                return dateString;
-            }
-            const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(parsedDate);
-            return `${weekday} ${dateString}`;
-        };
-
         const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified }) => {
             const processedData = useMemo(() => {
                 const dates = [...new Set(data.map(d => d.date))].sort();
@@ -343,7 +334,6 @@
 
             const textColor = isDarkMode ? "text-gray-200" : "text-gray-600";
             const bgColor = isDarkMode ? "bg-gray-900/95 border-gray-700" : "bg-white/95 border-white/20";
-            const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
 
             return (
                 <div className="fixed inset-0 z-[2001] flex items-center justify-center p-4 pb-safe" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
@@ -405,18 +395,7 @@
                                 )}
                                 
                                 {series.map((p, i) => <circle key={i} cx={getX(i)} cy={getY(p.total)} r="3" fill="#60A5FA" />)}
-                                {series.map((p, i) => (
-                                    <text
-                                        key={i}
-                                        x={getX(i)}
-                                        y={height - 5}
-                                        fontSize="8"
-                                        textAnchor="middle"
-                                        fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
-                                    >
-                                        {formatDateWithDay(p.date, locale)}
-                                    </text>
-                                ))}
+                                {series.map((p, i) => <text key={i} x={getX(i)} y={height - 5} fontSize="8" textAnchor="middle" fill={isDarkMode ? "#9CA3AF" : "#6B7280"}>{p.date.slice(5)}</text>)}
                             </svg>
                         </div>
                      </div>
@@ -452,8 +431,6 @@
 
             const isDarkMode = activeLayer === 'dark' || activeLayer === 'satellite';
             const t = translations[lang];
-            const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
-            const dateFilterLabel = dateFilter ? formatDateWithDay(dateFilter, locale) : t.showingAll;
 
             useEffect(() => { document.body.classList.toggle('dark-theme', isDarkMode); }, [isDarkMode]);
 
@@ -1016,7 +993,7 @@
                          <div className={`w-full max-w-xl backdrop-blur-xl shadow-2xl rounded-2xl p-3 md:p-4 border flex flex-col space-y-3 transition-colors duration-300 timeline-flag-glass pointer-events-auto ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
                             <div className={`flex justify-between items-center text-xs font-bold uppercase tracking-wide opacity-90 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                                 <span>{t.timeline}</span>
-                                <span>{dateFilterLabel}</span>
+                                <span>{dateFilter || t.showingAll}</span>
                             </div>
                             
                             <div className={`flex items-center space-x-3 md:space-x-4 ${lang === 'fa' ? 'space-x-reverse' : ''}`}>
@@ -1124,7 +1101,7 @@
                                     <div className={`md:hidden flex items-center justify-between text-xs space-x-4 border-b pb-4 ${isDarkMode ? 'text-gray-200 border-gray-700' : 'text-gray-600 border-gray-200'}`}>
                                         <div className="flex items-center space-x-1.5 opacity-90">
                                             <IconCalendar className="w-3.5 h-3.5" />
-                                            <span>{formatDateWithDay(selectedIncident.date, locale)}</span>
+                                            <span>{selectedIncident.date}</span>
                                         </div>
                                         <div className="flex items-center space-x-1.5 opacity-90 truncate">
                                             <IconMapPin className="w-3.5 h-3.5" />
@@ -1139,7 +1116,7 @@
                                                 <IconCalendar className={`w-4 h-4 ${lang === 'fa' ? 'ml-1.5' : 'mr-1.5'}`} /> 
                                                 {t.date}
                                             </div>
-                                            <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{formatDateWithDay(selectedIncident.date, locale)}</div>
+                                            <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{selectedIncident.date}</div>
                                         </div>
                                         <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50/50 border-gray-100'}`}>
                                             <div className={`flex items-center text-gray-500 mb-1 text-xs uppercase tracking-wide font-bold`}>
