@@ -263,9 +263,14 @@
             if (!dateString) return '';
             const date = new Date(`${dateString}T00:00:00Z`);
             if (Number.isNaN(date.getTime())) return dateString;
-            const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
-            const weekday = date.toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' });
-            return `${weekday} ${dateString}`;
+            const locale = lang === 'fa' ? 'fa-IR-u-ca-persian' : 'en-US';
+            return new Intl.DateTimeFormat(locale, {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                timeZone: 'UTC'
+            }).format(date);
         };
 
         const TweetEmbed = ({ url, isDarkMode }) => {
