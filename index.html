@@ -343,6 +343,13 @@
                 if (series.length === 0) return "";
                 return "M" + series.map((p, i) => `${getX(i)},${getY(p[key])}`).join(" L");
             };
+            const formatChartDate = (dateString) => {
+                if (!dateString) return "";
+                const date = new Date(`${dateString}T00:00:00Z`);
+                if (Number.isNaN(date.getTime())) return dateString;
+                const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
+                return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+            };
 
             const textColor = isDarkMode ? "text-gray-200" : "text-gray-600";
             const bgColor = isDarkMode ? "bg-gray-900/95 border-gray-700" : "bg-white/95 border-white/20";
@@ -393,8 +400,8 @@
                             </div>
                             <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}><IconX className="w-6 h-6" /></button>
                         </div>
-                        <div className="overflow-x-auto no-scrollbar" dir="ltr"> 
-                            <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible min-w-[520px] md:min-w-[640px]">
+                        <div className="w-full" dir="ltr"> 
+                            <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" className="w-full h-auto overflow-visible">
                                 <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
                                 <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
                                 {yTicks.map((tick) => {
@@ -437,7 +444,7 @@
                                         fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
                                         transform={`rotate(-30 ${getX(i)} ${height - 8})`}
                                     >
-                                        {p.date}
+                                        {formatChartDate(p.date)}
                                     </text>
                                 ))}
                             </svg>
