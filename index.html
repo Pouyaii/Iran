@@ -339,10 +339,17 @@
             const getX = (index) => padding + (index / (dates.length - 1)) * graphWidth;
             const getY = (val) => height - padding - (val / maxVal) * graphHeight;
             const yTicks = [0, 0.25, 0.5, 0.75, 1];
-            const createPath = (key) => {
-                if (series.length === 0) return "";
-                return "M" + series.map((p, i) => `${getX(i)},${getY(p[key])}`).join(" L");
+            const createPathSegment = (key, startIndex, endIndex) => {
+                if (series.length === 0 || endIndex < startIndex || endIndex < 0) return "";
+                const points = [];
+                for (let i = Math.max(startIndex, 0); i <= endIndex; i++) {
+                    points.push(`${getX(i)},${getY(series[i][key])}`);
+                }
+                return points.length ? `M${points.join(" L")}` : "";
             };
+            const lastIndex = series.length - 1;
+            const createBasePath = (key) => createPathSegment(key, 0, lastIndex - 1);
+            const createRecentPath = (key) => createPathSegment(key, Math.max(lastIndex - 1, 0), lastIndex);
             const formatChartDate = (dateString) => {
                 if (!dateString) return "";
                 const date = new Date(`${dateString}T00:00:00Z`);
@@ -379,11 +386,11 @@
                                         <span>{t.total}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="w-6 border-t-2 border-dashed border-red-500"></span>
+                                        <span className="w-6 border-t-2 border-red-500"></span>
                                         <span>{t.large}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="w-6 border-t-2 border-dashed border-orange-500"></span>
+                                        <span className="w-6 border-t-2 border-orange-500"></span>
                                         <span>{t.medium}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -425,12 +432,19 @@
                                 >
                                     {t.yAxisLabel}
                                 </text>
-                                <path d={createPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" />
-                                <path d={createPath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" strokeDasharray="5 5" />
-                                <path d={createPath('medium')} fill="none" stroke="#F97316" strokeWidth="2.5" strokeDasharray="3 3" />
-                                <path d={createPath('small')} fill="none" stroke="#FACC15" strokeWidth="2.5" />
+                                <path d={createBasePath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" />
+                                <path d={createRecentPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" strokeDasharray="6 4" />
+                                <path d={createBasePath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" />
+                                <path d={createRecentPath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" strokeDasharray="6 4" />
+                                <path d={createBasePath('medium')} fill="none" stroke="#F97316" strokeWidth="2.5" />
+                                <path d={createRecentPath('medium')} fill="none" stroke="#F97316" strokeWidth="2.5" strokeDasharray="6 4" />
+                                <path d={createBasePath('small')} fill="none" stroke="#FACC15" strokeWidth="2.5" />
+                                <path d={createRecentPath('small')} fill="none" stroke="#FACC15" strokeWidth="2.5" strokeDasharray="6 4" />
                                 {showUnverified && (
-                                    <path d={createPath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeDasharray="2 2" />
+                                    <>
+                                        <path d={createBasePath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeDasharray="2 2" />
+                                        <path d={createRecentPath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeDasharray="6 4" />
+                                    </>
                                 )}
                                 
                                 {series.map((p, i) => <circle key={i} cx={getX(i)} cy={getY(p.total)} r="4" fill="#60A5FA" />)}
