@@ -415,6 +415,7 @@
             const [selectedIncident, setSelectedIncident] = useState(null);
             const [showGraph, setShowGraph] = useState(false);
             const [showUnverified, setShowUnverified] = useState(false);
+            const [showAllTooltips, setShowAllTooltips] = useState(false);
             const [dateFilter, setDateFilter] = useState(null); 
             const [isPlaying, setIsPlaying] = useState(false);
             const [lang, setLang] = useState('en'); 
@@ -444,7 +445,19 @@
                 }
             }, []);
 
-             // --- Data Definitions (Updated with 82 verified and 103 unverified) ---
+            // --- Hidden Tooltip Toggle (Desktop Only) ---
+            useEffect(() => {
+                const handleKeyDown = (event) => {
+                    if (window.innerWidth < 768) return;
+                    if (event.key && event.key.toLowerCase() === 'h') {
+                        setShowAllTooltips(prev => !prev);
+                    }
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, []);
+
+             // --- Data Definitions (Updated with 92 verified and 103 unverified) ---
             const verifiedIncidents = useMemo(() => [
                 { "id": 1, "verified": true, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "desc_fa": "عقب راندن نیروهای پلیس و امنیتی توسط معترضان در خیابان جمهوری تهران", "coords": [35.6927461, 51.4255329], "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null },
                 { "id": 2, "verified": true, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "desc_fa": "تجمع معترضان مقابل مرکز خرید قصر در جزیره قشم", "coords": [26.968793, 56.075395], "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null },
@@ -527,7 +540,17 @@
                 { "id": 79, "verified": true, "desc": "Crowd of protesters in Gorgan chanting “Death to the Dictator”", "desc_fa": "جمعیت معترضان در گرگان شعار «مرگ بر دیکتاتور» سر می‌دهند", "coords": [36.833255, 54.439778], "link": "https://x.com/GhonchehAzad/status/2009339049723744406", "date": "2026-01-08", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2009339287805022576" },
                 { "id": 80, "verified": true, "desc": "Protesters in Kish Island chanting in favour of pre-1979 Pahlavi monarchy", "desc_fa": "معترضان در جزیره کیش در حمایت از پادشاهی پهلوی پیش از ۱۹۷۹ شعار می‌دهند", "coords": [26.5394, 54.0206], "link": "https://x.com/GhonchehAzad/status/2009353393861800389", "date": "2026-01-08", "size": "big", "alt": null },
                 { "id": 81, "verified": true, "desc": "Burning of IRIB (state media) building in Isfahan", "desc_fa": "آتش‌سوزی ساختمان صداوسیما (IRIB) در اصفهان", "coords": [32.640921, 51.651810], "link": "https://x.com/FSeifikaran/status/2009354444627169640", "date": "2026-01-08", "size": "small", "alt": "https://x.com/FSeifikaran/status/2009371541738258597" },
-                { "id": 82, "verified": true, "desc": "Protesters set fires inside the governor’s compound in Gorgan", "desc_fa": "معترضان در محوطه فرمانداری گرگان آتش روشن کردند", "coords": [36.83679, 54.43582], "link": "https://x.com/FSeifikaran/status/2009376196543267254", "date": "2026-01-08", "size": "big", "alt": null }
+                { "id": 82, "verified": true, "desc": "Protesters set fires inside the governor’s compound in Gorgan", "desc_fa": "معترضان در محوطه فرمانداری گرگان آتش روشن کردند", "coords": [36.83679, 54.43582], "link": "https://x.com/FSeifikaran/status/2009376196543267254", "date": "2026-01-08", "size": "big", "alt": null },
+                { "id": 83, "verified": true, "desc": "Burning of Qassem Soleimani statue in Kerman", "desc_fa": "آتش زدن مجسمه قاسم سلیمانی در کرمان", "coords": [30.287466, 57.05243], "link": "https://x.com/FSeifikaran/status/2009417105154949439", "date": "2026-01-08", "size": "small", "alt": "https://x.com/GhonchehAzad/status/2009430317346509155, https://x.com/GeoConfirmed/status/2009442008767844849" },
+                { "id": 84, "verified": true, "desc": "Chants of \"death to the dictator\" and \"death to Khamenei\" on Dolat Street in north Tehran", "desc_fa": "شعار «مرگ بر دیکتاتور» و «مرگ بر خامنه‌ای» در خیابان دولت در شمال تهران", "coords": [35.780451, 51.453411], "link": "https://x.com/Shayan86/status/2009415227222413743", "date": "2026-01-08", "size": "medium", "alt": "https://x.com/GeoConfirmed/status/2009440929468268842" },
+                { "id": 85, "verified": true, "desc": "Large crowd gathered near the Gholhak district in north Tehran", "desc_fa": "تجمع جمعیت بزرگی در نزدیکی محله قلهک در شمال تهران", "coords": [35.767244, 51.441978], "link": "https://x.com/Shayan86/status/2009427374304055418", "date": "2026-01-08", "size": "big", "alt": "https://x.com/GeoConfirmed/status/2009441031344025729" },
+                { "id": 86, "verified": true, "desc": "Multiple vehicles on fire in Kaj Square in Tehran's Saadat Abad district as protesters chant \"Pahlavi will return\"", "desc_fa": "آتش‌سوزی چند خودرو در میدان کاج در سعادت‌آباد تهران همزمان با شعار «پهلوی برمی‌گرده»", "coords": [35.7822773, 51.3746329], "link": "https://x.com/Shayan86/status/2009406927210508360", "date": "2026-01-08", "size": "big", "alt": "https://x.com/GeoConfirmed/status/2009440830793056501" },
+                { "id": 87, "verified": true, "desc": "Large crowd marching down Khanzadeh Blvd in Mehrshahr, Karaj", "desc_fa": "راهپیمایی جمعیت بزرگی در بلوار خانزاده در مهرشهر کرج", "coords": [35.812787, 50.937517], "link": "https://x.com/Shayan86/status/2009448144443199709", "date": "2026-01-08", "size": "big", "alt": null },
+                { "id": 88, "verified": true, "desc": "Multiple vehicles belonging to police and security forces set on fire in Moalem Square in Yazd", "desc_fa": "به آتش کشیدن چند خودرو متعلق به پلیس و نیروهای امنیتی در میدان معلم یزد", "coords": [31.897506, 54.340780], "link": "https://x.com/Shayan86/status/2009477160390807632", "date": "2026-01-08", "size": "medium", "alt": null },
+                { "id": 89, "verified": true, "desc": "Protesters storm the local government building in Imam Khomeini Square and set it on fire in Shazand", "desc_fa": "یورش معترضان به ساختمان فرمانداری در میدان امام خمینی شازند و آتش زدن آن", "coords": [33.931456, 49.410447], "link": "https://x.com/Shayan86/status/2009482509625819154", "date": "2026-01-08", "size": "big", "alt": null },
+                { "id": 90, "verified": true, "desc": "Protesters chant \"death to the dictator\" under the Karimkhan Zand Bridge in central Tehran", "desc_fa": "شعار «مرگ بر دیکتاتور» معترضان زیر پل کریمخان زند در مرکز تهران", "coords": [35.7153281, 51.4189591], "link": "https://x.com/Shayan86/status/2009489783958143023", "date": "2026-01-08", "size": "medium", "alt": null },
+                { "id": 91, "verified": true, "desc": "Protesters in Shahrud, Semnan Province", "desc_fa": "تجمع معترضان در شاهرود، استان سمنان", "coords": [36.42441, 54.96679], "link": "https://x.com/thestevennabil/status/2009395866587812315", "date": "2026-01-08", "size": "medium", "alt": "https://x.com/GeoConfirmed/status/2009440733120315690" },
+                { "id": 92, "verified": true, "desc": "A massive crowd of protesters march along the Vakil Abad Freeway in Mashhad", "desc_fa": "راهپیمایی جمعیت عظیم معترضان در آزادراه وکیل‌آباد مشهد", "coords": [36.32624, 59.50516], "link": "https://x.com/MohamadAhwaze/status/2009402277514113074", "date": "2026-01-08", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2009433239346401611, https://x.com/GeoConfirmed/status/2009441128055992786" }
             ], []);
 
             // --- Unverified Data (Same as provided) ---
@@ -799,6 +822,17 @@
                     markersRef.current.push(marker);
                 });
             }, [isMapReady, displayedIncidents, lang]);
+
+            useEffect(() => {
+                if (!isMapReady || window.innerWidth < 768) return;
+                markersRef.current.forEach(marker => {
+                    if (showAllTooltips) {
+                        marker.openTooltip();
+                    } else {
+                        marker.closeTooltip();
+                    }
+                });
+            }, [isMapReady, showAllTooltips, displayedIncidents]);
 
             // --- Handle Layer Switching ---
             useEffect(() => {
