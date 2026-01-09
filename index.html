@@ -333,7 +333,7 @@
             }, [data]);
 
             const { dates, series } = processedData;
-            const height = 200; const width = 500; const padding = 50;
+            const height = 320; const width = 720; const padding = 60;
             const graphWidth = width - padding * 2; const graphHeight = height - padding * 2;
             const maxVal = Math.max(...series.map(s => s.total), 5); 
             const getX = (index) => padding + (index / (dates.length - 1)) * graphWidth;
@@ -350,7 +350,7 @@
             return (
                 <div className="fixed inset-0 z-[2001] flex items-center justify-center p-4 pb-safe" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
                      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
-                     <div className={`relative ${bgColor} backdrop-blur-xl border shadow-2xl rounded-2xl p-4 md:p-6 w-full max-w-2xl animate-fade-in`}>
+                     <div className={`relative ${bgColor} backdrop-blur-xl border shadow-2xl rounded-2xl p-5 md:p-7 w-full max-w-4xl animate-fade-in`}>
                         <div className="flex justify-between items-start gap-4 mb-6">
                             <div>
                                 <h2 className={`text-lg md:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>{t.chartTitle}</h2>
@@ -394,7 +394,7 @@
                             <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}><IconX className="w-6 h-6" /></button>
                         </div>
                         <div className="overflow-x-auto no-scrollbar" dir="ltr"> 
-                            <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible min-w-[300px]">
+                            <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible min-w-[520px] md:min-w-[640px]">
                                 <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
                                 <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
                                 {yTicks.map((tick) => {
@@ -402,42 +402,42 @@
                                     return (
                                         <g key={tick}>
                                             <line x1={padding} y1={getY(tick * maxVal)} x2={width - padding} y2={getY(tick * maxVal)} stroke={isDarkMode ? "#374151" : "#e5e7eb"} strokeDasharray="4 4" />
-                                            <text x={padding - 8} y={getY(tick * maxVal) + 3} fontSize="8" textAnchor="end" fill={isDarkMode ? "#9CA3AF" : "#6B7280"}>
+                                            <text x={padding - 10} y={getY(tick * maxVal) + 4} fontSize="10" textAnchor="end" fill={isDarkMode ? "#9CA3AF" : "#6B7280"}>
                                                 {value}
                                             </text>
                                         </g>
                                     );
                                 })}
                                 <text
-                                    x={padding - 35}
+                                    x={padding - 40}
                                     y={height / 2}
-                                    fontSize="9"
+                                    fontSize="10"
                                     textAnchor="middle"
                                     fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
-                                    transform={`rotate(-90 ${padding - 35} ${height / 2})`}
+                                    transform={`rotate(-90 ${padding - 40} ${height / 2})`}
                                 >
                                     {t.yAxisLabel}
                                 </text>
-                                <path d={createPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3" />
-                                <path d={createPath('big')} fill="none" stroke="#EF4444" strokeWidth="2" strokeDasharray="5 5" />
-                                <path d={createPath('medium')} fill="none" stroke="#F97316" strokeWidth="2" strokeDasharray="3 3" />
-                                <path d={createPath('small')} fill="none" stroke="#FACC15" strokeWidth="2" />
+                                <path d={createPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" />
+                                <path d={createPath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" strokeDasharray="5 5" />
+                                <path d={createPath('medium')} fill="none" stroke="#F97316" strokeWidth="2.5" strokeDasharray="3 3" />
+                                <path d={createPath('small')} fill="none" stroke="#FACC15" strokeWidth="2.5" />
                                 {showUnverified && (
-                                    <path d={createPath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2" strokeDasharray="2 2" />
+                                    <path d={createPath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeDasharray="2 2" />
                                 )}
                                 
-                                {series.map((p, i) => <circle key={i} cx={getX(i)} cy={getY(p.total)} r="3" fill="#60A5FA" />)}
+                                {series.map((p, i) => <circle key={i} cx={getX(i)} cy={getY(p.total)} r="4" fill="#60A5FA" />)}
                                 {series.map((p, i) => (
                                     <text
                                         key={i}
                                         x={getX(i)}
-                                        y={height - 5}
-                                        fontSize="7"
+                                        y={height - 8}
+                                        fontSize="9"
                                         textAnchor="end"
                                         fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
-                                        transform={`rotate(-35 ${getX(i)} ${height - 5})`}
+                                        transform={`rotate(-30 ${getX(i)} ${height - 8})`}
                                     >
-                                        {formatDateWithWeekday(p.date, lang)}
+                                        {p.date}
                                     </text>
                                 ))}
                             </svg>
