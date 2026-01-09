@@ -210,13 +210,14 @@
                 showingAll: "Showing All Events",
                 all: "All",
                 chartTitle: "Protest Activity Over Time",
-                chartNote: "Note: Date reflects date of tweet, not necessarily the date of the incident. Verified totals for the most recent day can look lower while new footage is still being confirmed.",
+                chartNote: "Verified totals for the most recent day may appear lower while new footage is still being confirmed.",
                 total: "Total",
-                large: "Large",
-                medium: "Medium",
-                small: "Small",
+                large: "Large crowd",
+                medium: "Medium crowd",
+                small: "Small crowd",
                 incidentDetails: "Incident Details",
                 date: "Date",
+                yAxisLabel: "Number of Protest Incidents",
                 dateNote: "Date reflects tweet date.",
                 location: "Location",
                 description: "Description",
@@ -240,13 +241,14 @@
                 showingAll: "نمایش همه رویدادها",
                 all: "همه",
                 chartTitle: "فعالیت اعتراضات در طول زمان",
-                chartNote: "توجه: تاریخ منعکس کننده تاریخ توییت است، نه لزوماً تاریخ حادثه. آمار تأییدشده برای جدیدترین روز ممکن است کمتر به نظر برسد چون تأیید ویدیوهای تازه زمان می‌برد.",
+                chartNote: "آمار تأییدشده برای جدیدترین روز ممکن است پایین‌تر به نظر برسد چون ویدیوهای تازه هنوز در حال تأیید هستند.",
                 total: "کل",
-                large: "بزرگ",
-                medium: "متوسط",
-                small: "کوچک",
+                large: "بزرگ (جمعیت)",
+                medium: "متوسط (جمعیت)",
+                small: "کوچک (جمعیت)",
                 incidentDetails: "جزئیات حادثه",
                 date: "تاریخ",
+                yAxisLabel: "تعداد رویدادهای اعتراضی",
                 dateNote: "تاریخ منعکس کننده تاریخ توییت است.",
                 location: "مکان",
                 description: "توضیحات",
@@ -255,6 +257,16 @@
                 viewOnX: "مشاهده در X",
                 clickForInfo: "برای اطلاعات بیشتر کلیک کنید"
             }
+        };
+
+        const formatDateWithWeekday = (dateStr, lang) => {
+            if (!dateStr) return "";
+            const date = new Date(`${dateStr}T00:00:00Z`);
+            const weekday = new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR' : 'en-US', {
+                weekday: 'short',
+                timeZone: 'UTC'
+            }).format(date);
+            return `${weekday} ${dateStr}`;
         };
 
         const TweetEmbed = ({ url, isDarkMode }) => {
@@ -322,7 +334,7 @@
             }, [data]);
 
             const { dates, series } = processedData;
-            const height = 200; const width = 500; const padding = 30;
+            const height = 200; const width = 500; const padding = 50;
             const graphWidth = width - padding * 2; const graphHeight = height - padding * 2;
             const maxVal = Math.max(...series.map(s => s.total), 5); 
             const getX = (index) => padding + (index / (dates.length - 1)) * graphWidth;
@@ -383,8 +395,30 @@
                         </div>
                         <div className="overflow-x-auto no-scrollbar" dir="ltr"> 
                             <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible min-w-[300px]">
+                                <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke={isDarkMode ? "#4B5563" : "#9CA3AF"} strokeWidth="1" />
+                                <text
+                                    x={-(height / 2)}
+                                    y="16"
+                                    transform="rotate(-90)"
+                                    textAnchor="middle"
+                                    fontSize="10"
+                                    fill={isDarkMode ? "#D1D5DB" : "#4B5563"}
+                                >
+                                    {t.yAxisLabel}
+                                </text>
                                 {[0, 0.25, 0.5, 0.75, 1].map((tick) => (
-                                    <line key={tick} x1={padding} y1={getY(tick * maxVal)} x2={width - padding} y2={getY(tick * maxVal)} stroke={isDarkMode ? "#374151" : "#e5e7eb"} strokeDasharray="4 4" />
+                                    <g key={tick}>
+                                        <line x1={padding} y1={getY(tick * maxVal)} x2={width - padding} y2={getY(tick * maxVal)} stroke={isDarkMode ? "#374151" : "#e5e7eb"} strokeDasharray="4 4" />
+                                        <text
+                                            x={padding - 6}
+                                            y={getY(tick * maxVal) + 3}
+                                            textAnchor="end"
+                                            fontSize="9"
+                                            fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
+                                        >
+                                            {Math.round(tick * maxVal)}
+                                        </text>
+                                    </g>
                                 ))}
                                 <path d={createPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3" />
                                 <path d={createPath('big')} fill="none" stroke="#EF4444" strokeWidth="2" strokeDasharray="5 5" />
@@ -395,7 +429,11 @@
                                 )}
                                 
                                 {series.map((p, i) => <circle key={i} cx={getX(i)} cy={getY(p.total)} r="3" fill="#60A5FA" />)}
-                                {series.map((p, i) => <text key={i} x={getX(i)} y={height - 5} fontSize="8" textAnchor="middle" fill={isDarkMode ? "#9CA3AF" : "#6B7280"}>{p.date.slice(5)}</text>)}
+                                {series.map((p, i) => (
+                                    <text key={i} x={getX(i)} y={height - 5} fontSize="8" textAnchor="middle" fill={isDarkMode ? "#9CA3AF" : "#6B7280"}>
+                                        {formatDateWithWeekday(p.date, lang)}
+                                    </text>
+                                ))}
                             </svg>
                         </div>
                      </div>
@@ -993,7 +1031,7 @@
                          <div className={`w-full max-w-xl backdrop-blur-xl shadow-2xl rounded-2xl p-3 md:p-4 border flex flex-col space-y-3 transition-colors duration-300 timeline-flag-glass pointer-events-auto ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
                             <div className={`flex justify-between items-center text-xs font-bold uppercase tracking-wide opacity-90 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                                 <span>{t.timeline}</span>
-                                <span>{dateFilter || t.showingAll}</span>
+                                <span>{dateFilter ? formatDateWithWeekday(dateFilter, lang) : t.showingAll}</span>
                             </div>
                             
                             <div className={`flex items-center space-x-3 md:space-x-4 ${lang === 'fa' ? 'space-x-reverse' : ''}`}>
@@ -1101,7 +1139,7 @@
                                     <div className={`md:hidden flex items-center justify-between text-xs space-x-4 border-b pb-4 ${isDarkMode ? 'text-gray-200 border-gray-700' : 'text-gray-600 border-gray-200'}`}>
                                         <div className="flex items-center space-x-1.5 opacity-90">
                                             <IconCalendar className="w-3.5 h-3.5" />
-                                            <span>{selectedIncident.date}</span>
+                                            <span>{formatDateWithWeekday(selectedIncident.date, lang)}</span>
                                         </div>
                                         <div className="flex items-center space-x-1.5 opacity-90 truncate">
                                             <IconMapPin className="w-3.5 h-3.5" />
@@ -1116,7 +1154,7 @@
                                                 <IconCalendar className={`w-4 h-4 ${lang === 'fa' ? 'ml-1.5' : 'mr-1.5'}`} /> 
                                                 {t.date}
                                             </div>
-                                            <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{selectedIncident.date}</div>
+                                            <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{formatDateWithWeekday(selectedIncident.date, lang)}</div>
                                         </div>
                                         <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50/50 border-gray-100'}`}>
                                             <div className={`flex items-center text-gray-500 mb-1 text-xs uppercase tracking-wide font-bold`}>
