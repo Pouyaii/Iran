@@ -211,6 +211,7 @@
                 all: "All",
                 chartTitle: "Protest Activity Over Time",
                 chartNote: "Note: Date reflects date of tweet, not necessarily the date of the incident. Verified totals for the most recent day may appear lower while new footage is still being confirmed.",
+                informationBlackout: "Information Blackout",
                 total: "Total",
                 large: "Large Crowd",
                 medium: "Medium Crowd",
@@ -243,6 +244,7 @@
                 all: "همه",
                 chartTitle: "فعالیت اعتراضات در طول زمان",
                 chartNote: "توجه: تاریخ منعکس کننده تاریخ توییت است، نه لزوماً تاریخ حادثه. ممکن است مجموع تأییدشده برای جدیدترین روز کمتر به نظر برسد چون تأیید ویدیوهای تازه هنوز ادامه دارد.",
+                informationBlackout: "خاموشی اطلاعات",
                 total: "کل",
                 large: "جمعیت زیاد",
                 medium: "جمعیت متوسط",
@@ -364,6 +366,12 @@
                 const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
                 return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' });
             };
+            const blackoutStartDate = "2026-01-08";
+            const blackoutStartIndex = dates.indexOf(blackoutStartDate);
+            const blackoutStartX = blackoutStartIndex >= 0 ? getX(blackoutStartIndex) : null;
+            const blackoutEndX = width - padding;
+            const blackoutLabelX = blackoutStartX !== null ? blackoutStartX + (blackoutEndX - blackoutStartX) / 2 : null;
+            const blackoutLabelY = padding + 18;
 
             const textColor = isDarkMode ? "text-gray-200" : "text-gray-600";
             const bgColor = isDarkMode ? "bg-gray-900/95 border-gray-700" : "bg-white/95 border-white/20";
@@ -439,6 +447,27 @@
                                 >
                                     {t.yAxisLabel}
                                 </text>
+                                {blackoutStartX !== null && (
+                                    <>
+                                        <rect
+                                            x={blackoutStartX}
+                                            y={padding}
+                                            width={blackoutEndX - blackoutStartX}
+                                            height={graphHeight}
+                                            fill="rgba(0, 0, 0, 0.3)"
+                                        />
+                                        <text
+                                            x={blackoutLabelX}
+                                            y={blackoutLabelY}
+                                            fontSize="11"
+                                            textAnchor="middle"
+                                            fill="rgba(255, 255, 255, 0.7)"
+                                            fontFamily={lang === 'fa' ? 'Vazirmatn, sans-serif' : 'inherit'}
+                                        >
+                                            {t.informationBlackout}
+                                        </text>
+                                    </>
+                                )}
                                 <path d={createBasePath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" />
                                 <path d={createRecentPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" strokeDasharray="6 4" />
                                 <path d={createBasePath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" />
