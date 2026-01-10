@@ -548,41 +548,57 @@
                     if (tagName === 'input' || tagName === 'textarea' || target?.isContentEditable) return;
 
                     const key = event.key?.toLowerCase();
+                    const code = event.code || '';
                     const isDesktop = window.innerWidth >= 768;
+                    const isKey = (value) => key === value || code === `Key${value.toUpperCase()}`;
+                    const digitMatch = code.match(/^(Digit|Numpad)(\d)$/);
 
-                    if (isDesktop && key === 'h') {
+                    if (isDesktop && isKey('h')) {
                         setShowAllTooltips(prev => !prev);
                         return;
                     }
-                    if (isDesktop && key === 'i') {
+                    if (isDesktop && isKey('i')) {
                         setShowIdTooltips(prev => !prev);
                         return;
                     }
-                    if (key === 'v') {
+                    if (isKey('v')) {
+                        event.preventDefault();
+                        event.stopPropagation();
                         setIdSearchMode('verified');
                         setIdSearchBuffer('');
                         return;
                     }
-                    if (key === 'u') {
+                    if (isKey('u')) {
+                        event.preventDefault();
+                        event.stopPropagation();
                         setIdSearchMode('unverified');
                         setIdSearchBuffer('');
                         return;
                     }
                     if (!idSearchMode) return;
-                    if (key && /^[0-9]$/.test(key)) {
-                        setIdSearchBuffer(prev => `${prev}${key}`);
+                    if (digitMatch || (key && /^[0-9]$/.test(key))) {
+                        const digit = digitMatch ? digitMatch[2] : key;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setIdSearchBuffer(prev => `${prev}${digit}`);
                         return;
                     }
                     if (key === 'backspace') {
+                        event.preventDefault();
+                        event.stopPropagation();
                         setIdSearchBuffer(prev => prev.slice(0, -1));
                         return;
                     }
                     if (key === 'escape') {
+                        event.preventDefault();
+                        event.stopPropagation();
                         setIdSearchMode(null);
                         setIdSearchBuffer('');
                         return;
                     }
                     if (key === 'enter') {
+                        event.preventDefault();
+                        event.stopPropagation();
                         if (idSearchBuffer.length === 0) {
                             setIdSearchMode(null);
                             return;
