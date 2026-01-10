@@ -480,6 +480,7 @@
             const mapInstanceRef = useRef(null);
             const tileLayerRef = useRef(null);
             const markersRef = useRef([]); 
+            const idTooltipsRef = useRef([]);
             
             const [isMapReady, setIsMapReady] = useState(false);
             const [activeLayer, setActiveLayer] = useState('light');
@@ -488,9 +489,12 @@
             const [showGraph, setShowGraph] = useState(false);
             const [showUnverified, setShowUnverified] = useState(false);
             const [showAllTooltips, setShowAllTooltips] = useState(false);
+            const [showIdTooltips, setShowIdTooltips] = useState(false);
             const [dateFilter, setDateFilter] = useState(null); 
             const [isPlaying, setIsPlaying] = useState(false);
             const [lang, setLang] = useState('en'); 
+            const [idSearchMode, setIdSearchMode] = useState(null);
+            const [idSearchBuffer, setIdSearchBuffer] = useState('');
             
             // Animation State for Title
             const [isHeaderAnimating, setIsHeaderAnimating] = useState(false);
@@ -517,17 +521,85 @@
                 }
             }, []);
 
-            // --- Hidden Tooltip Toggle (Desktop Only) ---
+            const focusIncident = useCallback((incident) => {
+                const map = mapInstanceRef.current;
+                if (!map || !incident) return;
+                const L = window.L;
+                setSelectedIncident(incident);
+                setPanelHeight(window.innerHeight * 0.66);
+
+                if (window.innerWidth < 768) {
+                    const mapHeight = map.getSize().y;
+                    const targetPanelHeight = window.innerHeight * 0.66;
+                    const point = map.project(incident.coords, 14);
+                    const targetPoint = L.point(point.x, point.y + (targetPanelHeight / 2));
+                    const targetLatLng = map.unproject(targetPoint, 14);
+                    map.flyTo(targetLatLng, 14, { duration: 1.5 });
+                } else {
+                    map.flyTo(incident.coords, 14, { duration: 1.5 });
+                }
+            }, []);
+
+            // --- Hidden Tooltip Toggle + ID Navigation ---
             useEffect(() => {
                 const handleKeyDown = (event) => {
-                    if (window.innerWidth < 768) return;
-                    if (event.key && event.key.toLowerCase() === 'h') {
+                    const target = event.target;
+                    const tagName = target?.tagName?.toLowerCase();
+                    if (tagName === 'input' || tagName === 'textarea' || target?.isContentEditable) return;
+
+                    const key = event.key?.toLowerCase();
+                    const isDesktop = window.innerWidth >= 768;
+
+                    if (isDesktop && key === 'h') {
                         setShowAllTooltips(prev => !prev);
+                        return;
+                    }
+                    if (isDesktop && key === 'i') {
+                        setShowIdTooltips(prev => !prev);
+                        return;
+                    }
+                    if (key === 'v') {
+                        setIdSearchMode('verified');
+                        setIdSearchBuffer('');
+                        return;
+                    }
+                    if (key === 'u') {
+                        setIdSearchMode('unverified');
+                        setIdSearchBuffer('');
+                        return;
+                    }
+                    if (!idSearchMode) return;
+                    if (key && /^[0-9]$/.test(key)) {
+                        setIdSearchBuffer(prev => `${prev}${key}`);
+                        return;
+                    }
+                    if (key === 'backspace') {
+                        setIdSearchBuffer(prev => prev.slice(0, -1));
+                        return;
+                    }
+                    if (key === 'escape') {
+                        setIdSearchMode(null);
+                        setIdSearchBuffer('');
+                        return;
+                    }
+                    if (key === 'enter') {
+                        if (idSearchBuffer.length === 0) {
+                            setIdSearchMode(null);
+                            return;
+                        }
+                        const parsedId = Number.parseInt(idSearchBuffer, 10);
+                        const source = idSearchMode === 'verified' ? verifiedIncidents : unverifiedIncidents;
+                        const found = source.find((incident) => incident.id === parsedId);
+                        if (found) {
+                            focusIncident(found);
+                        }
+                        setIdSearchMode(null);
+                        setIdSearchBuffer('');
                     }
                 };
                 window.addEventListener('keydown', handleKeyDown);
                 return () => window.removeEventListener('keydown', handleKeyDown);
-            }, []);
+            }, [focusIncident, idSearchBuffer, idSearchMode, unverifiedIncidents, verifiedIncidents]);
 
             // --- Data Definitions (Updated with 106 verified and 167 unverified) ---
             const verifiedIncidents = useMemo(() => [
@@ -895,6 +967,8 @@
 
                 markersRef.current.forEach(marker => marker.remove());
                 markersRef.current = [];
+                idTooltipsRef.current.forEach(tooltip => tooltip.remove());
+                idTooltipsRef.current = [];
 
                 const getColor = (incident) => {
                     if (!incident.verified) return '#9CA3AF'; // Grey-400 for unverified
@@ -944,34 +1018,25 @@
                             </div>
                         `, { direction: 'top', offset: [0, -iconSize + 5], opacity: 0.95, className: 'custom-tooltip' });
 
-                    marker.on('click', () => {
-                        const L = window.L;
-                        setSelectedIncident(incident);
-                        setPanelHeight(window.innerHeight * 0.66); // Open to 2/3rds on click
+                    const idTooltip = L.tooltip({
+                        direction: 'top',
+                        offset: [0, -iconSize - 8],
+                        opacity: 0.95,
+                        className: 'custom-tooltip'
+                    })
+                        .setLatLng(incident.coords)
+                        .setContent(`
+                            <div class="font-sans text-xs font-semibold px-1">#${incident.id}</div>
+                        `);
 
-                        // --- SMART CENTERING LOGIC ---
-                        if (window.innerWidth < 768) {
-                            // On Mobile: Center in the top 34% of the screen (visible area above 66% panel)
-                            const mapHeight = map.getSize().y;
-                            const targetPanelHeight = window.innerHeight * 0.66;
-                            const visibleMapHeight = mapHeight - targetPanelHeight;
-                            
-                            // We want the point to be at the center of the VISIBLE area
-                            // Offset needed = (mapHeight / 2) - (visibleMapHeight / 2) = targetPanelHeight / 2
-                            
-                            const point = map.project(incident.coords, 14);
-                            const targetPoint = L.point(point.x, point.y + (targetPanelHeight / 2));
-                            const targetLatLng = map.unproject(targetPoint, 14);
-                            
-                            map.flyTo(targetLatLng, 14, { duration: 1.5 });
-                        } else {
-                            map.flyTo(incident.coords, 14, { duration: 1.5 });
-                        }
+                    marker.on('click', () => {
+                        focusIncident(incident);
                     });
 
                     markersRef.current.push(marker);
+                    idTooltipsRef.current.push(idTooltip);
                 });
-            }, [isMapReady, displayedIncidents, lang]);
+            }, [focusIncident, isMapReady, displayedIncidents, lang]);
 
             useEffect(() => {
                 if (!isMapReady || window.innerWidth < 768) return;
@@ -983,6 +1048,18 @@
                     }
                 });
             }, [isMapReady, showAllTooltips, displayedIncidents]);
+
+            useEffect(() => {
+                if (!isMapReady || window.innerWidth < 768) return;
+                const map = mapInstanceRef.current;
+                idTooltipsRef.current.forEach(tooltip => {
+                    if (showIdTooltips) {
+                        tooltip.addTo(map);
+                    } else if (map.hasLayer(tooltip)) {
+                        map.removeLayer(tooltip);
+                    }
+                });
+            }, [isMapReady, showIdTooltips, displayedIncidents]);
 
             // --- Handle Layer Switching ---
             useEffect(() => {
