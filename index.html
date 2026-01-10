@@ -224,7 +224,8 @@
                 footage: "Footage",
                 altAngle: "Alt Angle",
                 viewOnX: "View on X",
-                clickForInfo: "Click for more info"
+                clickForInfo: "Click for more info",
+                unverifiedLocationNote: "Location data for unverified reports is automated and may be inaccurate."
             },
             fa: {
                 title: "نقشه اعتراضات ایران",
@@ -255,7 +256,8 @@
                 footage: "ویدیو",
                 altAngle: "زاویه دیگر",
                 viewOnX: "مشاهده در X",
-                clickForInfo: "برای اطلاعات بیشتر کلیک کنید"
+                clickForInfo: "برای اطلاعات بیشتر کلیک کنید",
+                unverifiedLocationNote: "مکان برای گزارش‌های تأییدنشده به‌صورت خودکار ثبت می‌شود و ممکن است دقیق نباشد."
             }
         };
 
@@ -1276,6 +1278,12 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    {!selectedIncident.verified && (
+                                        <div className={`rounded-lg border px-3 py-2 text-xs md:text-sm font-medium ${isDarkMode ? 'border-amber-400/40 bg-amber-400/10 text-amber-100' : 'border-amber-500/40 bg-amber-50 text-amber-700'}`}>
+                                            {t.unverifiedLocationNote}
+                                        </div>
+                                    )}
 
                                     <div>
                                         {/* Cleaner Description UI */}
