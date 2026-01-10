@@ -216,7 +216,6 @@
                 medium: "Medium Crowd",
                 small: "Small Crowd",
                 yAxisLabel: "Number of Protest Incidents",
-                blackoutLabel: "Information Blackout",
                 incidentDetails: "Incident Details",
                 date: "Date",
                 dateNote: "Date reflects tweet date.",
@@ -249,7 +248,6 @@
                 medium: "جمعیت متوسط",
                 small: "جمعیت کم",
                 yAxisLabel: "تعداد رخدادهای اعتراضی",
-                blackoutLabel: "خاموشی اطلاعات",
                 incidentDetails: "جزئیات حادثه",
                 date: "تاریخ",
                 dateNote: "تاریخ منعکس کننده تاریخ توییت است.",
@@ -366,12 +364,6 @@
                 const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
                 return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' });
             };
-            const blackoutStartIndex = dates.indexOf("2026-01-08");
-            const blackoutX = blackoutStartIndex >= 0 ? getX(blackoutStartIndex) : null;
-            const blackoutWidth = blackoutStartIndex >= 0 ? Math.max(width - padding - blackoutX, 0) : 0;
-            const blackoutLabelX = blackoutStartIndex >= 0 ? blackoutX + blackoutWidth / 2 : 0;
-            const blackoutLabelY = padding + 24;
-            const blackoutLabelFill = isDarkMode ? "rgba(255, 255, 255, 0.55)" : "rgba(255, 255, 255, 0.7)";
 
             const textColor = isDarkMode ? "text-gray-200" : "text-gray-600";
             const bgColor = isDarkMode ? "bg-gray-900/95 border-gray-700" : "bg-white/95 border-white/20";
@@ -447,28 +439,6 @@
                                 >
                                     {t.yAxisLabel}
                                 </text>
-                                {blackoutStartIndex >= 0 && blackoutWidth > 0 && (
-                                    <g>
-                                        <rect
-                                            x={blackoutX}
-                                            y={padding}
-                                            width={blackoutWidth}
-                                            height={graphHeight}
-                                            fill="rgba(0, 0, 0, 0.3)"
-                                        />
-                                        <text
-                                            x={blackoutLabelX}
-                                            y={blackoutLabelY}
-                                            fontSize="12"
-                                            textAnchor="middle"
-                                            fill={blackoutLabelFill}
-                                            fontFamily={lang === 'fa' ? 'Vazirmatn, sans-serif' : 'inherit'}
-                                            letterSpacing="0.5"
-                                        >
-                                            {t.blackoutLabel}
-                                        </text>
-                                    </g>
-                                )}
                                 <path d={createBasePath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" />
                                 <path d={createRecentPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" strokeDasharray="6 4" />
                                 <path d={createBasePath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" />
