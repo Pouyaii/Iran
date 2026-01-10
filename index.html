@@ -542,6 +542,17 @@
 
             // --- Hidden Tooltip Toggle + ID Navigation ---
             useEffect(() => {
+                const findIncidentByNumericId = (incidents, numericId) => incidents.find((incident) => {
+                    if (typeof incident.id === 'number') {
+                        return incident.id === numericId;
+                    }
+                    const normalized = String(incident.id || '').toLowerCase();
+                    if (normalized.startsWith('u')) {
+                        return Number.parseInt(normalized.slice(1), 10) === numericId;
+                    }
+                    return Number.parseInt(normalized, 10) === numericId;
+                });
+
                 const handleKeyDown = (event) => {
                     const target = event.target;
                     const tagName = target?.tagName?.toLowerCase();
@@ -605,8 +616,11 @@
                         }
                         const parsedId = Number.parseInt(idSearchBuffer, 10);
                         const source = idSearchMode === 'verified' ? verifiedIncidents : unverifiedIncidents;
-                        const found = source.find((incident) => incident.id === parsedId);
+                        const found = findIncidentByNumericId(source, parsedId);
                         if (found) {
+                            if (idSearchMode === 'unverified' && !showUnverified) {
+                                setShowUnverified(true);
+                            }
                             focusIncident(found);
                         }
                         setIdSearchMode(null);
@@ -615,7 +629,7 @@
                 };
                 window.addEventListener('keydown', handleKeyDown);
                 return () => window.removeEventListener('keydown', handleKeyDown);
-            }, [focusIncident, idSearchBuffer, idSearchMode, unverifiedIncidents, verifiedIncidents]);
+            }, [focusIncident, idSearchBuffer, idSearchMode, showUnverified, unverifiedIncidents, verifiedIncidents]);
 
             // --- Data Definitions (Updated with 106 verified and 167 unverified) ---
             const verifiedIncidents = useMemo(() => [
