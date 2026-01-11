@@ -227,6 +227,9 @@
                 dateNote: "Date reflects tweet date.",
                 location: "Location",
                 description: "Description",
+                tags: "Tags",
+                gunfireTag: "Gunfire",
+                deathsTag: "Deaths",
                 footage: "Footage",
                 altAngle: "Alt Angle",
                 viewOnX: "View on X",
@@ -265,6 +268,9 @@
                 dateNote: "تاریخ منعکس کننده تاریخ توییت است.",
                 location: "مکان",
                 description: "توضیحات",
+                tags: "برچسب‌ها",
+                gunfireTag: "تیراندازی",
+                deathsTag: "کشته‌ها",
                 footage: "ویدیو",
                 altAngle: "زاویه دیگر",
                 viewOnX: "مشاهده در X",
@@ -320,6 +326,22 @@
                 timeZone: 'UTC'
             }).format(date);
         };
+
+        const gunfireTagRegex = /(?:gunfire|gunshots?|shooting|shots fired|opening fire|opened fire|under fire|firing at|fire at|shotgun|تیراندازی|شلیک|گلوله جنگی|گلوله|ساچمه)/i;
+        const deathsTagRegex = /(?:bodies?|body bags?|killed|killings?|dead|fatalities?|corpse|death(?! to\b)|killed|murdered|deaths|کشته|کشتار|اجساد|جسد|پیکر|کیسه جسد)/i;
+
+        const getIncidentTags = (incident) => {
+            const text = `${incident.desc || ''} ${incident.desc_fa || ''}`;
+            const tags = [];
+            if (gunfireTagRegex.test(text)) tags.push('Gunfire');
+            if (deathsTagRegex.test(text)) tags.push('Deaths');
+            return tags;
+        };
+
+        const tagIncidents = (incidents) => incidents.map((incident) => ({
+            ...incident,
+            tags: getIncidentTags(incident)
+        }));
 
         const TweetEmbed = ({ url, isDarkMode }) => {
             const containerRef = useRef(null);
@@ -710,6 +732,25 @@
 
             const isDarkMode = activeLayer === 'dark' || activeLayer === 'satellite';
             const t = translations[lang];
+            const tagLabels = {
+                Gunfire: t.gunfireTag,
+                Deaths: t.deathsTag
+            };
+            const getTagClasses = (tag) => {
+                const baseClasses = 'inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold';
+                const tagStyles = {
+                    Gunfire: isDarkMode
+                        ? 'border-rose-400/40 bg-rose-500/10 text-rose-200'
+                        : 'border-rose-200 bg-rose-50 text-rose-700',
+                    Deaths: isDarkMode
+                        ? 'border-amber-400/40 bg-amber-500/10 text-amber-200'
+                        : 'border-amber-200 bg-amber-50 text-amber-700'
+                };
+                const defaultStyle = isDarkMode
+                    ? 'border-gray-700 bg-gray-800 text-gray-200'
+                    : 'border-gray-200 bg-gray-100 text-gray-700';
+                return `${baseClasses} ${tagStyles[tag] || defaultStyle}`;
+            };
 
             useEffect(() => { document.body.classList.toggle('dark-theme', isDarkMode); }, [isDarkMode]);
 
@@ -834,8 +875,8 @@
                 return () => window.removeEventListener('keydown', handleKeyDown);
             }, [focusIncident, idSearchBuffer, idSearchMode, showUnverified, unverifiedIncidents, verifiedIncidents]);
 
-            // --- Data Definitions (Updated with 146 verified and 179 unverified) ---
-            const verifiedIncidents = useMemo(() => [
+            // --- Data Definitions (Updated with 157 verified and 179 unverified) ---
+            const verifiedIncidents = useMemo(() => tagIncidents([
                 {"id": 1, "verified": true, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "desc_fa": "عقب راندن نیروهای پلیس و امنیتی توسط معترضان در خیابان جمهوری تهران", "coords": [35.6927461, 51.4255329], "province": "Tehran", "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null},
                 {"id": 2, "verified": true, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "desc_fa": "تجمع معترضان مقابل مرکز خرید قصر در جزیره قشم", "coords": [26.968793, 56.075395], "province": "Hormozgan", "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null},
                 {"id": 3, "verified": true, "desc": "Group gathered in Tehran", "desc_fa": "تجمع گروهی از مردم در تهران", "coords": [35.752619, 51.466106], "province": "Tehran", "link": "https://x.com/GhonchehAzad/status/2005992119258038527", "date": "2025-12-30", "size": "big", "alt": null},
@@ -980,13 +1021,23 @@
                 {"id": 144, "verified": true, "desc": "Crowds protesting in the street with sounds of gunfire", "desc_fa": "جمعیت معترض در خیابان همراه با صدای تیراندازی", "coords": [26.9606, 56.27441], "province": "Hormozgan", "link": "https://x.com/Faytuks/status/2009806546843107436", "date": "2026-01-09", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2009813704137945242"},
                 {"id": 145, "verified": true, "desc": "Multiple bodies laying on the ground outside Alghadir Hospital in Eastern Tehran", "desc_fa": "چندین جسد روی زمین مقابل بیمارستان الغدیر در شرق تهران", "coords": [35.746201, 51.499665], "province": "Tehran", "link": "https://x.com/IranIntl_En/status/2009664642256396643", "date": "2026-01-10", "size": "small", "alt": "https://x.com/GeoConfirmed/status/2009751055790223505?s=20"},
                 {"id": 146, "verified": true, "desc": "Heavy clashes on Vakil Abad Boulevard. Protesters hide behind barricades as security forces fire shots from a footbridge.", "desc_fa": "درگیری شدید در بلوار وکیل‌آباد. معترضان پشت سنگرها پنهان شده‌اند و نیروهای امنیتی از روی پل عابر شلیک می‌کنند.", "coords": [36.318333, 59.531333], "province": "Khorasan Razavi", "link": "https://x.com/Shayan86/status/2010175802131030145", "date": "2026-01-10", "size": "big", "alt": null},
-                {"id": 147, "verified": true, "desc": "Large crowds in the street", "desc_fa": "جمعیت زیاد در خیابان‌ها", "coords": [35.69663, 51.02906], "province": "Alborz", "link": "https://x.com/IranIntl_En/status/2010077915724353891", "date": "2026-01-10", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2010205991942664202"}
+                {"id": 147, "verified": true, "desc": "Large crowds in the street", "desc_fa": "جمعیت زیاد در خیابان‌ها", "coords": [35.69663, 51.02906], "province": "Alborz", "link": "https://x.com/IranIntl_En/status/2010077915724353891", "date": "2026-01-10", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2010205991942664202"},
+                {"id": 148, "verified": true, "desc": "Protestors in the street with sounds of gunfire", "desc_fa": "معترضان در خیابان همراه با صدای تیراندازی", "coords": [35.7458, 51.5351], "province": "Tehran", "link": "https://x.com/mhmiranusa/status/2010262006184530181", "date": "2026-01-10", "size": "medium", "alt": null},
+                {"id": 149, "verified": true, "desc": "Protestors chanting \"This is the year of blood, Sayyed Ali will be overthrown!\"", "desc_fa": "معترضان شعار می‌دهند «امسال سال خون است، سیدعلی سرنگون است!»", "coords": [34.079997, 49.708101], "province": "Markazi", "link": "https://x.com/IranIntl/status/2010271873397919774", "date": "2026-01-10", "size": "medium", "alt": "https://x.com/GeoConfirmed/status/2010322512698069371"},
+                {"id": 150, "verified": true, "desc": "Protestors chanting slogans amid sounds of heavy gunfire", "desc_fa": "معترضان در میان صدای تیراندازی شدید شعار می‌دهند", "coords": [35.733878, 51.521313], "province": "Tehran", "link": "https://x.com/en_simayazadi/status/2010044411539763481", "date": "2026-01-10", "size": "medium", "alt": "https://x.com/GeoConfirmed/status/2010322681430679735"},
+                {"id": 151, "verified": true, "desc": "Security forces deploying and with sounds of gunfire", "desc_fa": "استقرار نیروهای امنیتی همراه با صدای تیراندازی", "coords": [29.613589, 51.654038], "province": "Fars", "link": "https://x.com/Soranmansournia/status/2009984087176749197", "date": "2026-01-10", "size": "small", "alt": "https://x.com/GeoConfirmed/status/2010322853711773852"},
+                {"id": 152, "verified": true, "desc": "Protestors marching and chanting in the street", "desc_fa": "معترضان در خیابان راهپیمایی و شعار می‌دهند", "coords": [27.18034, 56.27822], "province": "Hormozgan", "link": "https://x.com/mhmiranusa/status/2010373661052567817", "date": "2026-01-11", "size": "big", "alt": "https://x.com/zarGEOINT/status/2010330973129572537"},
+                {"id": 153, "verified": true, "desc": "Bodies piling up outside of body collection site, reportedly from protestors killed in recent nights", "desc_fa": "انباشت اجساد بیرون از محل جمع‌آوری، گزارش‌شده از معترضان کشته‌شده در شب‌های اخیر", "coords": [35.51797, 51.36991], "province": "Tehran", "link": "https://x.com/michaelh992/status/2010386722136432723", "date": "2026-01-11", "size": "big", "alt": "https://x.com/FaytuksNetwork/status/2010399126736035939, https://x.com/Mitch_Ulrich/status/2010395570566045880"},
+                {"id": 154, "verified": true, "desc": "Dozens of body bags with people searching for loved ones at body collection site", "desc_fa": "ده‌ها کیسه جسد و جست‌وجوی مردم برای عزیزان‌شان در محل جمع‌آوری اجساد", "coords": [35.51825, 51.37005], "province": "Tehran", "link": "https://x.com/sentdefender/status/2010137699793932547", "date": "2026-01-10", "size": "medium", "alt": "https://x.com/Mitch_Ulrich/status/2010163342888055146"},
+                {"id": 155, "verified": true, "desc": "Protestors under fire near Rashid Shopping Centre", "desc_fa": "معترضان زیر آتش نزدیک مرکز خرید رشید", "coords": [35.731989, 51.521071], "province": "Tehran", "link": "https://x.com/andynovy/status/2010419281859940490", "date": "2026-01-08", "size": "big", "alt": "https://x.com/IliaHashemicom/status/2010342947175473516"},
+                {"id": 156, "verified": true, "desc": "Bodies of protestors being identified at Kahrizak Forensic Medicine Center, video suggests 250 bodies of protestors killed on Thursday night", "desc_fa": "شناسایی اجساد معترضان در پزشکی قانونی کهریزک؛ ویدیو از حدود ۲۵۰ جسدِ معترضان کشته‌شده در شب پنجشنبه خبر می‌دهد", "coords": [35.518115, 51.369603], "province": "Tehran", "link": "https://x.com/Vahid/status/2010367357865136363", "date": "2026-01-11", "size": "big", "alt": "https://x.com/GeoConfirmed/status/2010425340590797272"},
+                {"id": 157, "verified": true, "desc": "Protestors chanting at security forces to surrender outside of police station", "desc_fa": "معترضان مقابل کلانتری از نیروهای امنیتی می‌خواهند تسلیم شوند", "coords": [35.78918, 50.86356], "province": "Alborz", "link": "https://x.com/zarGEOINT/status/2010444972085133554", "date": "2026-01-10", "size": "big", "alt": null}
             
             
-            ], []);
+            ]), []);
 
             // --- Unverified Data (Same as provided) ---
-            const unverifiedIncidents = useMemo(() => [
+            const unverifiedIncidents = useMemo(() => tagIncidents([
                 {"id": "u1", "verified": false, "desc": "Protesters marching on Ferdowsi Street near Sar Manouchehri", "desc_fa": "معترضان در حال راهپیمایی در خیابان فردوسی نزدیک سر منوچهری", "coords": [35.6892, 51.389], "province": "Tehran", "link": "https://x.com/Vahid/status/2005629230886072346", "date": "2025-12-30", "size": "medium", "alt": null},
                 {"id": "u2", "verified": false, "desc": "Gathering and protests outside Ghasr shopping center", "desc_fa": "تجمع و اعتراضات خارج از مرکز خرید قصر", "coords": [26.9584, 56.2716], "province": "Hormozgan", "link": "https://x.com/Vahid/status/2005667136111571200", "date": "2025-12-30", "size": "medium", "alt": null},
                 {"id": "u3", "verified": false, "desc": "Protests and clashes in Marlik", "desc_fa": "اعتراضات و درگیری‌ها در مارلیک", "coords": [35.6995, 50.9822], "province": "Alborz", "link": "https://x.com/Vahid/status/2005666037942136865", "date": "2025-12-30", "size": "medium", "alt": null},
@@ -1168,7 +1219,7 @@
                 {"id": "u179", "verified": false, "desc": "Protesters gathering", "desc_fa": "تجمع معترضان", "coords": [35.7604, 51.3353], "province": "Tehran", "link": "https://x.com/Vahid/status/2010102180473385460", "date": "2026-01-10", "size": "big", "alt": null}
             
             
-            ], []);
+            ]), []);
 
             const allIncidents = useMemo(() => {
                 const combined = showUnverified ? [...verifiedIncidents, ...unverifiedIncidents] : verifiedIncidents;
@@ -1658,6 +1709,19 @@
                                             {lang === 'fa' && selectedIncident.desc_fa ? selectedIncident.desc_fa : selectedIncident.desc}
                                         </div>
                                     </div>
+
+                                    {selectedIncident.tags?.length > 0 && (
+                                        <div className="space-y-2">
+                                            <div className={`text-xs font-bold uppercase tracking-wide ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t.tags}</div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedIncident.tags.map((tag) => (
+                                                    <span key={tag} className={getTagClasses(tag)}>
+                                                        {tagLabels[tag] || tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="space-y-6 pb-8">
                                         <div>
