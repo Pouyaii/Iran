@@ -273,6 +273,40 @@
             }
         };
 
+        const provinceTranslations = {
+            "Alborz": "البرز",
+            "Ardabil": "اردبیل",
+            "Bushehr": "بوشهر",
+            "Chaharmahal and Bakhtiari": "چهارمحال و بختیاری",
+            "East Azerbaijan": "آذربایجان شرقی",
+            "Fars": "فارس",
+            "Gilan": "گیلان",
+            "Golestan": "گلستان",
+            "Hamedan": "همدان",
+            "Hormozgan": "هرمزگان",
+            "Ilam": "ایلام",
+            "Isfahan": "اصفهان",
+            "Kerman": "کرمان",
+            "Kermanshah": "کرمانشاه",
+            "Khuzestan": "خوزستان",
+            "Kohgiluyeh and Boyer-Ahmad": "کهگیلویه و بویراحمد",
+            "Kurdistan": "کردستان",
+            "Lorestan": "لرستان",
+            "Markazi": "مرکزی",
+            "Mazandaran": "مازندران",
+            "North Khorasan": "خراسان شمالی",
+            "Qazvin": "قزوین",
+            "Qom": "قم",
+            "Khorasan Razavi": "خراسان رضوی",
+            "Semnan": "سمنان",
+            "Sistan and Baluchestan": "سیستان و بلوچستان",
+            "South Khorasan": "خراسان جنوبی",
+            "Tehran": "تهران",
+            "West Azerbaijan": "آذربایجان غربی",
+            "Yazd": "یزد",
+            "Zanjan": "زنجان"
+        };
+
         const formatDateWithWeekday = (dateString, lang = 'en') => {
             if (!dateString) return '';
             const date = new Date(`${dateString}T00:00:00Z`);
@@ -387,10 +421,14 @@
             const isTimeSeries = chartView === 'time';
             const height = isTimeSeries ? 320 : 380; const width = 720; const padding = 60;
             const topPadding = 60;
-            const bottomPadding = isTimeSeries ? 60 : 110;
+            const bottomPadding = isTimeSeries ? 60 : 80;
             const graphWidth = width - padding * 2; const graphHeight = height - topPadding - bottomPadding;
             const values = isTimeSeries ? series.map(s => s.total) : provinceData.map(p => p.displayTotal);
             const maxVal = Math.max(5, ...values);
+            const provinceLabelY = height - bottomPadding + 32;
+            const formatProvinceLabel = (province) => (
+                lang === 'fa' ? (provinceTranslations[province] || province) : province
+            );
             const getTimeX = (index) => {
                 if (dates.length <= 1) return padding + graphWidth / 2;
                 return padding + (index / (dates.length - 1)) * graphWidth;
@@ -618,13 +656,14 @@
                                                     )}
                                                     <text
                                                         x={x + barWidth / 2}
-                                                        y={height - 12}
+                                                        y={provinceLabelY}
                                                         fontSize="9"
                                                         textAnchor="end"
                                                         fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
-                                                        transform={`rotate(-30 ${x + barWidth / 2} ${height - 12})`}
+                                                        fontFamily={lang === 'fa' ? 'Vazirmatn, sans-serif' : 'inherit'}
+                                                        transform={`rotate(-30 ${x + barWidth / 2} ${provinceLabelY})`}
                                                     >
-                                                        {item.province}
+                                                        {formatProvinceLabel(item.province)}
                                                     </text>
                                                 </g>
                                             );
@@ -940,7 +979,8 @@
                 {"id": 143, "verified": true, "desc": "Massive fire with building burning", "desc_fa": "آتش‌سوزی گسترده با سوختن یک ساختمان", "coords": [36.47803, 52.34519], "province": "Mazandaran", "link": "https://x.com/IranIntl_En/status/2009805357665894438", "date": "2026-01-09", "size": "small", "alt": "https://x.com/Mitch_Ulrich/status/2009823406288712102"},
                 {"id": 144, "verified": true, "desc": "Crowds protesting in the street with sounds of gunfire", "desc_fa": "جمعیت معترض در خیابان همراه با صدای تیراندازی", "coords": [26.9606, 56.27441], "province": "Hormozgan", "link": "https://x.com/Faytuks/status/2009806546843107436", "date": "2026-01-09", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2009813704137945242"},
                 {"id": 145, "verified": true, "desc": "Multiple bodies laying on the ground outside Alghadir Hospital in Eastern Tehran", "desc_fa": "چندین جسد روی زمین مقابل بیمارستان الغدیر در شرق تهران", "coords": [35.746201, 51.499665], "province": "Tehran", "link": "https://x.com/IranIntl_En/status/2009664642256396643", "date": "2026-01-10", "size": "small", "alt": "https://x.com/GeoConfirmed/status/2009751055790223505?s=20"},
-                {"id": 146, "verified": true, "desc": "Heavy clashes on Vakil Abad Boulevard. Protesters hide behind barricades as security forces fire shots from a footbridge.", "desc_fa": "درگیری شدید در بلوار وکیل‌آباد. معترضان پشت سنگرها پنهان شده‌اند و نیروهای امنیتی از روی پل عابر شلیک می‌کنند.", "coords": [36.318333, 59.531333], "province": "Khorasan Razavi", "link": "https://x.com/Shayan86/status/2010175802131030145", "date": "2026-01-10", "size": "big", "alt": null}
+                {"id": 146, "verified": true, "desc": "Heavy clashes on Vakil Abad Boulevard. Protesters hide behind barricades as security forces fire shots from a footbridge.", "desc_fa": "درگیری شدید در بلوار وکیل‌آباد. معترضان پشت سنگرها پنهان شده‌اند و نیروهای امنیتی از روی پل عابر شلیک می‌کنند.", "coords": [36.318333, 59.531333], "province": "Khorasan Razavi", "link": "https://x.com/Shayan86/status/2010175802131030145", "date": "2026-01-10", "size": "big", "alt": null},
+                {"id": 147, "verified": true, "desc": "Large crowds in the street", "desc_fa": "جمعیت زیاد در خیابان‌ها", "coords": [35.69663, 51.02906], "province": "Alborz", "link": "https://x.com/IranIntl_En/status/2010077915724353891", "date": "2026-01-10", "size": "big", "alt": "https://x.com/Mitch_Ulrich/status/2010205991942664202"}
             
             
             ], []);
