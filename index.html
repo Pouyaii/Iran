@@ -354,26 +354,48 @@
             const provinceData = useMemo(() => {
                 const counts = data.reduce((acc, incident) => {
                     if (!incident.province) return acc;
-                    acc[incident.province] = (acc[incident.province] || 0) + 1;
+                    if (!acc[incident.province]) {
+                        acc[incident.province] = {
+                            province: incident.province,
+                            small: 0,
+                            medium: 0,
+                            big: 0,
+                            unverified: 0
+                        };
+                    }
+                    const entry = acc[incident.province];
+                    if (!incident.verified) {
+                        entry.unverified += 1;
+                        return acc;
+                    }
+                    const sizeKey = incident.size === 'big' ? 'big' : incident.size === 'medium' ? 'medium' : 'small';
+                    entry[sizeKey] += 1;
                     return acc;
                 }, {});
-                return Object.entries(counts)
-                    .map(([province, total]) => ({ province, total }))
-                    .filter(item => item.total > 0)
-                    .sort((a, b) => b.total - a.total);
-            }, [data]);
+                return Object.values(counts)
+                    .map((item) => {
+                        const verifiedTotal = item.small + item.medium + item.big;
+                        const total = verifiedTotal + item.unverified;
+                        const displayTotal = showUnverified ? total : verifiedTotal;
+                        return { ...item, verifiedTotal, total, displayTotal };
+                    })
+                    .filter(item => item.displayTotal > 0)
+                    .sort((a, b) => b.displayTotal - a.displayTotal);
+            }, [data, showUnverified]);
 
             const { dates, series } = processedData;
-            const height = 320; const width = 720; const padding = 60;
-            const graphWidth = width - padding * 2; const graphHeight = height - padding * 2;
             const isTimeSeries = chartView === 'time';
-            const values = isTimeSeries ? series.map(s => s.total) : provinceData.map(p => p.total);
+            const height = isTimeSeries ? 320 : 380; const width = 720; const padding = 60;
+            const topPadding = 60;
+            const bottomPadding = isTimeSeries ? 60 : 110;
+            const graphWidth = width - padding * 2; const graphHeight = height - topPadding - bottomPadding;
+            const values = isTimeSeries ? series.map(s => s.total) : provinceData.map(p => p.displayTotal);
             const maxVal = Math.max(5, ...values);
             const getTimeX = (index) => {
                 if (dates.length <= 1) return padding + graphWidth / 2;
                 return padding + (index / (dates.length - 1)) * graphWidth;
             };
-            const getY = (val) => height - padding - (val / maxVal) * graphHeight;
+            const getY = (val) => height - bottomPadding - (val / maxVal) * graphHeight;
             const yTicks = [0, 0.25, 0.5, 0.75, 1];
             const createPathSegment = (key, startIndex, endIndex) => {
                 if (series.length === 0 || endIndex < startIndex || endIndex < 0) return "";
@@ -398,7 +420,7 @@
             const blackoutStartX = blackoutStartIndex >= 0 ? getTimeX(blackoutStartIndex) : null;
             const blackoutEndX = width - padding;
             const blackoutLabelX = blackoutStartX !== null ? blackoutStartX + (blackoutEndX - blackoutStartX) / 2 : null;
-            const blackoutLabelY = padding + 18;
+            const blackoutLabelY = topPadding + 18;
 
             const textColor = isDarkMode ? "text-gray-200" : "text-gray-600";
             const bgColor = isDarkMode ? "bg-gray-900/95 border-gray-700" : "bg-white/95 border-white/20";
@@ -443,31 +465,29 @@
                                     </div>
                                 </div>
                                 <div className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] md:text-xs font-semibold ${textColor} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-6 border-t-2 border-blue-400"></span>
-                                        <span>{t.total}</span>
-                                    </div>
                                     {isTimeSeries && (
-                                        <>
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-6 border-t-2 border-red-500"></span>
-                                                <span>{t.large}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-6 border-t-2 border-orange-500"></span>
-                                                <span>{t.medium}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-6 border-t-2 border-yellow-400"></span>
-                                                <span>{t.small}</span>
-                                            </div>
-                                            {showUnverified && (
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-6 border-t-2 border-dotted border-gray-400"></span>
-                                                    <span>{t.unverified}</span>
-                                                </div>
-                                            )}
-                                        </>
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-6 border-t-2 border-blue-400"></span>
+                                            <span>{t.total}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-6 border-t-2 border-red-500"></span>
+                                        <span>{t.large}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-6 border-t-2 border-orange-500"></span>
+                                        <span>{t.medium}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-6 border-t-2 border-yellow-400"></span>
+                                        <span>{t.small}</span>
+                                    </div>
+                                    {showUnverified && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-6 border-t-2 border-gray-400"></span>
+                                            <span>{t.unverified}</span>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -475,8 +495,8 @@
                         </div>
                         <div className="w-full" dir="ltr"> 
                             <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" className="w-full h-auto overflow-visible">
-                                <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
-                                <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
+                                <line x1={padding} y1={topPadding} x2={padding} y2={height - bottomPadding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
+                                <line x1={padding} y1={height - bottomPadding} x2={width - padding} y2={height - bottomPadding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
                                 {yTicks.map((tick) => {
                                     const value = Math.round(tick * maxVal);
                                     return (
@@ -490,11 +510,11 @@
                                 })}
                                 <text
                                     x={padding - 40}
-                                    y={height / 2}
+                                    y={topPadding + graphHeight / 2}
                                     fontSize="10"
                                     textAnchor="middle"
                                     fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
-                                    transform={`rotate(-90 ${padding - 40} ${height / 2})`}
+                                    transform={`rotate(-90 ${padding - 40} ${topPadding + graphHeight / 2})`}
                                 >
                                     {t.yAxisLabel}
                                 </text>
@@ -504,7 +524,7 @@
                                             <>
                                                 <rect
                                                     x={blackoutStartX}
-                                                    y={padding}
+                                                    y={topPadding}
                                                     width={blackoutEndX - blackoutStartX}
                                                     height={graphHeight}
                                                     fill="rgba(0, 0, 0, 0.3)"
@@ -540,11 +560,11 @@
                                             <text
                                                 key={i}
                                                 x={getTimeX(i)}
-                                                y={height - 8}
+                                                y={height - 12}
                                                 fontSize="9"
                                                 textAnchor="end"
                                                 fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
-                                                transform={`rotate(-30 ${getTimeX(i)} ${height - 8})`}
+                                                transform={`rotate(-30 ${getTimeX(i)} ${height - 12})`}
                                             >
                                                 {formatChartDate(p.date)}
                                             </text>
@@ -556,24 +576,53 @@
                                             const slotWidth = provinceData.length ? graphWidth / provinceData.length : graphWidth;
                                             const barWidth = Math.max(slotWidth * 0.6, 6);
                                             const x = padding + index * slotWidth + (slotWidth - barWidth) / 2;
-                                            const barHeight = (item.total / maxVal) * graphHeight;
+                                            const totalHeight = (item.displayTotal / maxVal) * graphHeight;
+                                            const segments = [
+                                                { key: 'small', value: item.small, color: '#FACC15' },
+                                                { key: 'medium', value: item.medium, color: '#F97316' },
+                                                { key: 'big', value: item.big, color: '#EF4444' }
+                                            ];
+                                            if (showUnverified) {
+                                                segments.push({ key: 'unverified', value: item.unverified, color: '#9CA3AF' });
+                                            }
+                                            let yCursor = height - bottomPadding;
                                             return (
                                                 <g key={item.province}>
-                                                    <rect
-                                                        x={x}
-                                                        y={height - padding - barHeight}
-                                                        width={barWidth}
-                                                        height={barHeight}
-                                                        rx="3"
-                                                        fill="#60A5FA"
-                                                    />
+                                                    {segments.map((segment) => {
+                                                        if (!segment.value) return null;
+                                                        const segmentHeight = (segment.value / maxVal) * graphHeight;
+                                                        const y = yCursor - segmentHeight;
+                                                        yCursor = y;
+                                                        return (
+                                                            <rect
+                                                                key={`${item.province}-${segment.key}`}
+                                                                x={x}
+                                                                y={y}
+                                                                width={barWidth}
+                                                                height={segmentHeight}
+                                                                rx="2"
+                                                                fill={segment.color}
+                                                            />
+                                                        );
+                                                    })}
+                                                    {item.displayTotal > 0 && (
+                                                        <text
+                                                            x={x + barWidth / 2}
+                                                            y={height - bottomPadding - totalHeight - 6}
+                                                            fontSize="10"
+                                                            textAnchor="middle"
+                                                            fill={isDarkMode ? "#E5E7EB" : "#374151"}
+                                                        >
+                                                            {item.displayTotal}
+                                                        </text>
+                                                    )}
                                                     <text
                                                         x={x + barWidth / 2}
-                                                        y={height - 8}
+                                                        y={height - 12}
                                                         fontSize="9"
                                                         textAnchor="end"
                                                         fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
-                                                        transform={`rotate(-30 ${x + barWidth / 2} ${height - 8})`}
+                                                        transform={`rotate(-30 ${x + barWidth / 2} ${height - 12})`}
                                                     >
                                                         {item.province}
                                                     </text>
