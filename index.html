@@ -210,8 +210,13 @@
                 showingAll: "Showing All Events",
                 all: "All",
                 chartTitle: "Protest Activity Over Time",
+                chartTitleProvince: "Protest Incidents per Province",
                 chartNote: "Note: Date reflects date of tweet, not necessarily the date of the incident. Verified totals for the most recent day may appear lower while new footage is still being confirmed.",
                 informationBlackout: "Information Blackout",
+                timeSeries: "Time Series",
+                provincialBreakdown: "Provincial Breakdown",
+                viewTimeSeries: "View time series chart",
+                viewProvinceBreakdown: "View provincial breakdown chart",
                 total: "Total",
                 large: "Large Crowd",
                 medium: "Medium Crowd",
@@ -243,8 +248,13 @@
                 showingAll: "نمایش همه رویدادها",
                 all: "همه",
                 chartTitle: "فعالیت اعتراضات در طول زمان",
+                chartTitleProvince: "تعداد اعتراضات به تفکیک استان",
                 chartNote: "توجه: تاریخ منعکس کننده تاریخ توییت است، نه لزوماً تاریخ حادثه. ممکن است مجموع تأییدشده برای جدیدترین روز کمتر به نظر برسد چون تأیید ویدیوهای تازه هنوز ادامه دارد.",
                 informationBlackout: "خاموشی اطلاعات",
+                timeSeries: "سری زمانی",
+                provincialBreakdown: "تفکیک استانی",
+                viewTimeSeries: "نمای سری زمانی",
+                viewProvinceBreakdown: "نمای تفکیک استانی",
                 total: "کل",
                 large: "جمعیت زیاد",
                 medium: "جمعیت متوسط",
@@ -324,7 +334,7 @@
             );
         };
 
-        const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified }) => {
+        const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView }) => {
             const processedData = useMemo(() => {
                 const dates = [...new Set(data.map(d => d.date))].sort();
                 const series = dates.map(date => {
@@ -341,18 +351,35 @@
                 return { dates, series };
             }, [data]);
 
+            const provinceData = useMemo(() => {
+                const counts = data.reduce((acc, incident) => {
+                    if (!incident.province) return acc;
+                    acc[incident.province] = (acc[incident.province] || 0) + 1;
+                    return acc;
+                }, {});
+                return Object.entries(counts)
+                    .map(([province, total]) => ({ province, total }))
+                    .filter(item => item.total > 0)
+                    .sort((a, b) => b.total - a.total);
+            }, [data]);
+
             const { dates, series } = processedData;
             const height = 320; const width = 720; const padding = 60;
             const graphWidth = width - padding * 2; const graphHeight = height - padding * 2;
-            const maxVal = Math.max(...series.map(s => s.total), 5); 
-            const getX = (index) => padding + (index / (dates.length - 1)) * graphWidth;
+            const isTimeSeries = chartView === 'time';
+            const values = isTimeSeries ? series.map(s => s.total) : provinceData.map(p => p.total);
+            const maxVal = Math.max(5, ...values);
+            const getTimeX = (index) => {
+                if (dates.length <= 1) return padding + graphWidth / 2;
+                return padding + (index / (dates.length - 1)) * graphWidth;
+            };
             const getY = (val) => height - padding - (val / maxVal) * graphHeight;
             const yTicks = [0, 0.25, 0.5, 0.75, 1];
             const createPathSegment = (key, startIndex, endIndex) => {
                 if (series.length === 0 || endIndex < startIndex || endIndex < 0) return "";
                 const points = [];
                 for (let i = Math.max(startIndex, 0); i <= endIndex; i++) {
-                    points.push(`${getX(i)},${getY(series[i][key])}`);
+                    points.push(`${getTimeX(i)},${getY(series[i][key])}`);
                 }
                 return points.length ? `M${points.join(" L")}` : "";
             };
@@ -368,7 +395,7 @@
             };
             const blackoutStartDate = "2026-01-08";
             const blackoutStartIndex = dates.indexOf(blackoutStartDate);
-            const blackoutStartX = blackoutStartIndex >= 0 ? getX(blackoutStartIndex) : null;
+            const blackoutStartX = blackoutStartIndex >= 0 ? getTimeX(blackoutStartIndex) : null;
             const blackoutEndX = width - padding;
             const blackoutLabelX = blackoutStartX !== null ? blackoutStartX + (blackoutEndX - blackoutStartX) / 2 : null;
             const blackoutLabelY = padding + 18;
@@ -382,8 +409,12 @@
                      <div className={`relative ${bgColor} backdrop-blur-xl border shadow-2xl rounded-2xl p-5 md:p-7 w-full max-w-4xl animate-fade-in`}>
                         <div className="flex justify-between items-start gap-4 mb-6">
                             <div>
-                                <h2 className={`text-lg md:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>{t.chartTitle}</h2>
-                                <p className={`text-xs text-gray-400 italic mt-1 ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>{t.chartNote}</p>
+                                <h2 className={`text-lg md:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
+                                    {isTimeSeries ? t.chartTitle : t.chartTitleProvince}
+                                </h2>
+                                {isTimeSeries && (
+                                    <p className={`text-xs text-gray-400 italic mt-1 ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>{t.chartNote}</p>
+                                )}
                                 <div className={`mt-3 flex flex-wrap items-center gap-2 ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
                                     <button
                                         onClick={onToggleUnverified}
@@ -394,29 +425,49 @@
                                             <span>{showUnverified ? t.hideUnverified : t.showUnverified}</span>
                                         </span>
                                     </button>
+                                    <div className={`flex items-center rounded-full border p-1 text-[11px] md:text-xs font-semibold ${isDarkMode ? 'bg-gray-800/70 border-gray-600 text-gray-200' : 'bg-white/80 border-gray-200 text-gray-700'}`}>
+                                        <button
+                                            onClick={() => onChangeChartView('time')}
+                                            title={t.viewTimeSeries}
+                                            className={`px-3 py-1 rounded-full transition-all duration-200 ${isTimeSeries ? 'bg-blue-600 text-white' : ''}`}
+                                        >
+                                            {t.timeSeries}
+                                        </button>
+                                        <button
+                                            onClick={() => onChangeChartView('province')}
+                                            title={t.viewProvinceBreakdown}
+                                            className={`px-3 py-1 rounded-full transition-all duration-200 ${!isTimeSeries ? 'bg-blue-600 text-white' : ''}`}
+                                        >
+                                            {t.provincialBreakdown}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] md:text-xs font-semibold ${textColor} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
                                     <div className="flex items-center gap-2">
                                         <span className="w-6 border-t-2 border-blue-400"></span>
                                         <span>{t.total}</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-6 border-t-2 border-red-500"></span>
-                                        <span>{t.large}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-6 border-t-2 border-orange-500"></span>
-                                        <span>{t.medium}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-6 border-t-2 border-yellow-400"></span>
-                                        <span>{t.small}</span>
-                                    </div>
-                                    {showUnverified && (
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-6 border-t-2 border-dotted border-gray-400"></span>
-                                            <span>{t.unverified}</span>
-                                        </div>
+                                    {isTimeSeries && (
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-6 border-t-2 border-red-500"></span>
+                                                <span>{t.large}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-6 border-t-2 border-orange-500"></span>
+                                                <span>{t.medium}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-6 border-t-2 border-yellow-400"></span>
+                                                <span>{t.small}</span>
+                                            </div>
+                                            {showUnverified && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-6 border-t-2 border-dotted border-gray-400"></span>
+                                                    <span>{t.unverified}</span>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -447,56 +498,90 @@
                                 >
                                     {t.yAxisLabel}
                                 </text>
-                                {blackoutStartX !== null && (
+                                {isTimeSeries ? (
                                     <>
-                                        <rect
-                                            x={blackoutStartX}
-                                            y={padding}
-                                            width={blackoutEndX - blackoutStartX}
-                                            height={graphHeight}
-                                            fill="rgba(0, 0, 0, 0.3)"
-                                        />
-                                        <text
-                                            x={blackoutLabelX}
-                                            y={blackoutLabelY}
-                                            fontSize="11"
-                                            textAnchor="middle"
-                                            fill="rgba(255, 255, 255, 0.7)"
-                                            fontFamily={lang === 'fa' ? 'Vazirmatn, sans-serif' : 'inherit'}
-                                        >
-                                            {t.informationBlackout}
-                                        </text>
+                                        {blackoutStartX !== null && (
+                                            <>
+                                                <rect
+                                                    x={blackoutStartX}
+                                                    y={padding}
+                                                    width={blackoutEndX - blackoutStartX}
+                                                    height={graphHeight}
+                                                    fill="rgba(0, 0, 0, 0.3)"
+                                                />
+                                                <text
+                                                    x={blackoutLabelX}
+                                                    y={blackoutLabelY}
+                                                    fontSize="11"
+                                                    textAnchor="middle"
+                                                    fill="rgba(255, 255, 255, 0.7)"
+                                                    fontFamily={lang === 'fa' ? 'Vazirmatn, sans-serif' : 'inherit'}
+                                                >
+                                                    {t.informationBlackout}
+                                                </text>
+                                            </>
+                                        )}
+                                        <path d={createBasePath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" />
+                                        <path d={createRecentPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" strokeDasharray="6 4" />
+                                        <path d={createBasePath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" />
+                                        <path d={createRecentPath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" strokeDasharray="6 4" />
+                                        <path d={createBasePath('medium')} fill="none" stroke="#F97316" strokeWidth="2.5" />
+                                        <path d={createRecentPath('medium')} fill="none" stroke="#F97316" strokeWidth="2.5" strokeDasharray="6 4" />
+                                        <path d={createBasePath('small')} fill="none" stroke="#FACC15" strokeWidth="2.5" />
+                                        <path d={createRecentPath('small')} fill="none" stroke="#FACC15" strokeWidth="2.5" strokeDasharray="6 4" />
+                                        {showUnverified && (
+                                            <>
+                                                <path d={createBasePath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeDasharray="2 2" />
+                                                <path d={createRecentPath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeDasharray="6 4" />
+                                            </>
+                                        )}
+                                        {series.map((p, i) => <circle key={i} cx={getTimeX(i)} cy={getY(p.total)} r="4" fill="#60A5FA" />)}
+                                        {series.map((p, i) => (
+                                            <text
+                                                key={i}
+                                                x={getTimeX(i)}
+                                                y={height - 8}
+                                                fontSize="9"
+                                                textAnchor="end"
+                                                fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
+                                                transform={`rotate(-30 ${getTimeX(i)} ${height - 8})`}
+                                            >
+                                                {formatChartDate(p.date)}
+                                            </text>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <>
+                                        {provinceData.map((item, index) => {
+                                            const slotWidth = provinceData.length ? graphWidth / provinceData.length : graphWidth;
+                                            const barWidth = Math.max(slotWidth * 0.6, 6);
+                                            const x = padding + index * slotWidth + (slotWidth - barWidth) / 2;
+                                            const barHeight = (item.total / maxVal) * graphHeight;
+                                            return (
+                                                <g key={item.province}>
+                                                    <rect
+                                                        x={x}
+                                                        y={height - padding - barHeight}
+                                                        width={barWidth}
+                                                        height={barHeight}
+                                                        rx="3"
+                                                        fill="#60A5FA"
+                                                    />
+                                                    <text
+                                                        x={x + barWidth / 2}
+                                                        y={height - 8}
+                                                        fontSize="9"
+                                                        textAnchor="end"
+                                                        fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
+                                                        transform={`rotate(-30 ${x + barWidth / 2} ${height - 8})`}
+                                                    >
+                                                        {item.province}
+                                                    </text>
+                                                </g>
+                                            );
+                                        })}
                                     </>
                                 )}
-                                <path d={createBasePath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" />
-                                <path d={createRecentPath('total')} fill="none" stroke="#60A5FA" strokeWidth="3.5" strokeDasharray="6 4" />
-                                <path d={createBasePath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" />
-                                <path d={createRecentPath('big')} fill="none" stroke="#EF4444" strokeWidth="2.5" strokeDasharray="6 4" />
-                                <path d={createBasePath('medium')} fill="none" stroke="#F97316" strokeWidth="2.5" />
-                                <path d={createRecentPath('medium')} fill="none" stroke="#F97316" strokeWidth="2.5" strokeDasharray="6 4" />
-                                <path d={createBasePath('small')} fill="none" stroke="#FACC15" strokeWidth="2.5" />
-                                <path d={createRecentPath('small')} fill="none" stroke="#FACC15" strokeWidth="2.5" strokeDasharray="6 4" />
-                                {showUnverified && (
-                                    <>
-                                        <path d={createBasePath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeDasharray="2 2" />
-                                        <path d={createRecentPath('unverified')} fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeDasharray="6 4" />
-                                    </>
-                                )}
-                                
-                                {series.map((p, i) => <circle key={i} cx={getX(i)} cy={getY(p.total)} r="4" fill="#60A5FA" />)}
-                                {series.map((p, i) => (
-                                    <text
-                                        key={i}
-                                        x={getX(i)}
-                                        y={height - 8}
-                                        fontSize="9"
-                                        textAnchor="end"
-                                        fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
-                                        transform={`rotate(-30 ${getX(i)} ${height - 8})`}
-                                    >
-                                        {formatChartDate(p.date)}
-                                    </text>
-                                ))}
                             </svg>
                         </div>
                      </div>
@@ -516,6 +601,7 @@
             const [zoomLevel, setZoomLevel] = useState(5);
             const [selectedIncident, setSelectedIncident] = useState(null);
             const [showGraph, setShowGraph] = useState(false);
+            const [chartView, setChartView] = useState('time');
             const [showUnverified, setShowUnverified] = useState(false);
             const [showAllTooltips, setShowAllTooltips] = useState(false);
             const [showIdTooltips, setShowIdTooltips] = useState(false);
@@ -1390,6 +1476,8 @@
                             lang={lang}
                             showUnverified={showUnverified}
                             onToggleUnverified={() => setShowUnverified(!showUnverified)}
+                            chartView={chartView}
+                            onChangeChartView={setChartView}
                         />
                     )}
 
