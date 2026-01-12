@@ -194,6 +194,40 @@
         const IconMapPin = ({ className = "w-4 h-4" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>;
         const IconExternalLink = ({ className = "w-3 h-3" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>;
 
+        const provincePopulations = {
+            "Tehran": 13267637,
+            "Razavi Khorasan": 6434501,
+            "Isfahan": 5120850,
+            "Fars": 4851274,
+            "Khuzestan": 4710509,
+            "East Azerbaijan": 3909652,
+            "Mazandaran": 3283582,
+            "West Azerbaijan": 3265219,
+            "Kerman": 3164718,
+            "Sistan and Baluchestan": 2775014,
+            "Alborz": 2712400,
+            "Gilan": 2530696,
+            "Kermanshah": 1952434,
+            "Golestan": 1868819,
+            "Hormozgan": 1776415,
+            "Lorestan": 1760649,
+            "Hamadan": 1738234,
+            "Kurdistan": 1603011,
+            "Markazi": 1429475,
+            "Qom": 1292283,
+            "Qazvin": 1273761,
+            "Ardabil": 1270420,
+            "Bushehr": 1163400,
+            "Yazd": 1138533,
+            "Zanjan": 1057461,
+            "Chaharmahal and Bakhtiari": 947763,
+            "North Khorasan": 863092,
+            "South Khorasan": 768898,
+            "Kohgiluyeh and Boyer-Ahmad": 713052,
+            "Semnan": 702360,
+            "Ilam": 580158
+        };
+
         const translations = {
             en: {
                 title: "Iran Protest Map",
@@ -222,6 +256,9 @@
                 medium: "Medium Crowd",
                 small: "Small Crowd",
                 yAxisLabel: "Number of Protest Incidents",
+                yAxisLabelPerCapita: "Incidents per 100k",
+                absolute: "Absolute",
+                perCapita: "Per Capita",
                 incidentDetails: "Incident Details",
                 date: "Date",
                 dateNote: "Date reflects tweet date.",
@@ -263,6 +300,9 @@
                 medium: "جمعیت متوسط",
                 small: "جمعیت کم",
                 yAxisLabel: "تعداد رخدادهای اعتراضی",
+                yAxisLabelPerCapita: "تعداد رخدادها به ازای هر ۱۰۰ هزار نفر",
+                absolute: "مطلق",
+                perCapita: "سرانه",
                 incidentDetails: "جزئیات حادثه",
                 date: "تاریخ",
                 dateNote: "تاریخ منعکس کننده تاریخ توییت است.",
@@ -390,7 +430,7 @@
             );
         };
 
-        const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView }) => {
+        const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView, isPerCapita, onTogglePerCapita }) => {
             const processedData = useMemo(() => {
                 const dates = [...new Set(data.map(d => d.date))].sort();
                 const series = dates.map(date => {
@@ -408,6 +448,11 @@
             }, [data]);
 
             const provinceData = useMemo(() => {
+                const normalizePerCapita = (value, province) => {
+                    const population = provincePopulations[province];
+                    if (!population) return 0;
+                    return (value / population) * 100000;
+                };
                 const counts = data.reduce((acc, incident) => {
                     if (!incident.province) return acc;
                     if (!acc[incident.province]) {
@@ -432,12 +477,29 @@
                     .map((item) => {
                         const verifiedTotal = item.small + item.medium + item.big;
                         const total = verifiedTotal + item.unverified;
-                        const displayTotal = showUnverified ? total : verifiedTotal;
-                        return { ...item, verifiedTotal, total, displayTotal };
+                        const normalized = isPerCapita
+                            ? {
+                                small: normalizePerCapita(item.small, item.province),
+                                medium: normalizePerCapita(item.medium, item.province),
+                                big: normalizePerCapita(item.big, item.province),
+                                unverified: normalizePerCapita(item.unverified, item.province),
+                                verifiedTotal: normalizePerCapita(verifiedTotal, item.province),
+                                total: normalizePerCapita(total, item.province)
+                            }
+                            : {
+                                small: item.small,
+                                medium: item.medium,
+                                big: item.big,
+                                unverified: item.unverified,
+                                verifiedTotal,
+                                total
+                            };
+                        const displayTotal = showUnverified ? normalized.total : normalized.verifiedTotal;
+                        return { ...item, ...normalized, displayTotal };
                     })
                     .filter(item => item.displayTotal > 0)
                     .sort((a, b) => b.displayTotal - a.displayTotal);
-            }, [data, showUnverified]);
+            }, [data, showUnverified, isPerCapita]);
 
             const { dates, series } = processedData;
             const isTimeSeries = chartView === 'time';
@@ -447,6 +509,7 @@
             const graphWidth = width - padding * 2; const graphHeight = height - topPadding - bottomPadding;
             const values = isTimeSeries ? series.map(s => s.total) : provinceData.map(p => p.displayTotal);
             const maxVal = Math.max(5, ...values);
+            const yAxisLabel = !isTimeSeries && isPerCapita ? t.yAxisLabelPerCapita : t.yAxisLabel;
             const provinceLabelY = height - bottomPadding + 32;
             const formatProvinceLabel = (province) => (
                 lang === 'fa' ? (provinceTranslations[province] || province) : province
@@ -457,6 +520,7 @@
             };
             const getY = (val) => height - bottomPadding - (val / maxVal) * graphHeight;
             const yTicks = [0, 0.25, 0.5, 0.75, 1];
+            const formatYAxisValue = (value) => (!isTimeSeries && isPerCapita ? value.toFixed(2) : Math.round(value));
             const createPathSegment = (key, startIndex, endIndex) => {
                 if (series.length === 0 || endIndex < startIndex || endIndex < 0) return "";
                 const points = [];
@@ -523,6 +587,22 @@
                                             {t.provincialBreakdown}
                                         </button>
                                     </div>
+                                    {!isTimeSeries && (
+                                        <div className={`flex items-center rounded-full border p-1 text-[11px] md:text-xs font-semibold ${isDarkMode ? 'bg-gray-800/70 border-gray-600 text-gray-200' : 'bg-white/80 border-gray-200 text-gray-700'}`}>
+                                            <button
+                                                onClick={() => onTogglePerCapita(false)}
+                                                className={`px-3 py-1 rounded-full transition-all duration-200 ${!isPerCapita ? 'bg-blue-600 text-white' : ''}`}
+                                            >
+                                                {t.absolute}
+                                            </button>
+                                            <button
+                                                onClick={() => onTogglePerCapita(true)}
+                                                className={`px-3 py-1 rounded-full transition-all duration-200 ${isPerCapita ? 'bg-blue-600 text-white' : ''}`}
+                                            >
+                                                {t.perCapita}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] md:text-xs font-semibold ${textColor} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
                                     {isTimeSeries && (
@@ -558,12 +638,12 @@
                                 <line x1={padding} y1={topPadding} x2={padding} y2={height - bottomPadding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
                                 <line x1={padding} y1={height - bottomPadding} x2={width - padding} y2={height - bottomPadding} stroke={isDarkMode ? "#4B5563" : "#d1d5db"} />
                                 {yTicks.map((tick) => {
-                                    const value = Math.round(tick * maxVal);
+                                    const value = tick * maxVal;
                                     return (
                                         <g key={tick}>
                                             <line x1={padding} y1={getY(tick * maxVal)} x2={width - padding} y2={getY(tick * maxVal)} stroke={isDarkMode ? "#374151" : "#e5e7eb"} strokeDasharray="4 4" />
                                             <text x={padding - 10} y={getY(tick * maxVal) + 4} fontSize="10" textAnchor="end" fill={isDarkMode ? "#9CA3AF" : "#6B7280"}>
-                                                {value}
+                                                {formatYAxisValue(value)}
                                             </text>
                                         </g>
                                     );
@@ -576,7 +656,7 @@
                                     fill={isDarkMode ? "#9CA3AF" : "#6B7280"}
                                     transform={`rotate(-90 ${padding - 40} ${topPadding + graphHeight / 2})`}
                                 >
-                                    {t.yAxisLabel}
+                                    {yAxisLabel}
                                 </text>
                                 {isTimeSeries ? (
                                     <>
@@ -673,7 +753,7 @@
                                                             textAnchor="middle"
                                                             fill={isDarkMode ? "#E5E7EB" : "#374151"}
                                                         >
-                                                            {item.displayTotal}
+                                                            {isPerCapita ? item.displayTotal.toFixed(2) : item.displayTotal}
                                                         </text>
                                                     )}
                                                     <text
@@ -712,6 +792,7 @@
             const [selectedIncident, setSelectedIncident] = useState(null);
             const [showGraph, setShowGraph] = useState(false);
             const [chartView, setChartView] = useState('time');
+            const [isPerCapita, setIsPerCapita] = useState(false);
             const [showUnverified, setShowUnverified] = useState(false);
             const [showAllTooltips, setShowAllTooltips] = useState(false);
             const [showIdTooltips, setShowIdTooltips] = useState(false);
@@ -1627,6 +1708,8 @@
                             onToggleUnverified={() => setShowUnverified(!showUnverified)}
                             chartView={chartView}
                             onChangeChartView={setChartView}
+                            isPerCapita={isPerCapita}
+                            onTogglePerCapita={setIsPerCapita}
                         />
                     )}
 
