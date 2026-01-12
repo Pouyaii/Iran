@@ -508,7 +508,10 @@
             const bottomPadding = isTimeSeries ? 60 : 80;
             const graphWidth = width - padding * 2; const graphHeight = height - topPadding - bottomPadding;
             const values = isTimeSeries ? series.map(s => s.total) : provinceData.map(p => p.displayTotal);
-            const maxVal = Math.max(5, ...values);
+            const dataMax = values.length ? Math.max(...values) : 0;
+            const maxVal = !isTimeSeries && isPerCapita
+                ? Math.max(1, dataMax * 1.1)
+                : Math.max(5, dataMax);
             const yAxisLabel = !isTimeSeries && isPerCapita ? t.yAxisLabelPerCapita : t.yAxisLabel;
             const provinceLabelY = height - bottomPadding + 32;
             const formatProvinceLabel = (province) => (
