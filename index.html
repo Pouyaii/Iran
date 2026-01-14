@@ -445,7 +445,18 @@
 
         const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView, isPerCapita, onTogglePerCapita }) => {
             const processedData = useMemo(() => {
-                const dates = [...new Set(data.map(d => d.date))].sort();
+                const parseDate = (dateString) => new Date(`${dateString}T00:00:00Z`);
+                const formatDate = (dateObj) => dateObj.toISOString().slice(0, 10);
+                const uniqueDates = [...new Set(data.map(d => d.date))].sort();
+                if (uniqueDates.length === 0) return { dates: [], series: [] };
+                const chartEndDate = "2026-01-13";
+                const minDate = parseDate(uniqueDates[0]);
+                const maxDataDate = parseDate(uniqueDates[uniqueDates.length - 1]);
+                const maxDate = parseDate(chartEndDate) > maxDataDate ? parseDate(chartEndDate) : maxDataDate;
+                const dates = [];
+                for (let d = new Date(minDate); d <= maxDate; d.setUTCDate(d.getUTCDate() + 1)) {
+                    dates.push(formatDate(d));
+                }
                 const series = dates.map(date => {
                     const dayEvents = data.filter(d => d.date === date);
                     return {
