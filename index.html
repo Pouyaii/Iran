@@ -380,20 +380,6 @@
             }).format(date);
         };
 
-        const buildDateRange = (startDate, endDate) => {
-            if (!startDate || !endDate) return [];
-            const start = new Date(`${startDate}T00:00:00Z`);
-            const end = new Date(`${endDate}T00:00:00Z`);
-            if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return [];
-            const range = [];
-            const cursor = new Date(start);
-            while (cursor <= end) {
-                range.push(cursor.toISOString().slice(0, 10));
-                cursor.setUTCDate(cursor.getUTCDate() + 1);
-            }
-            return range;
-        };
-
         const gunfireTagRegex = /(?:gunfire|gunshots?|shooting|shots fired|opening fire|opened fire|under fire|firing at|fire at|shotgun|تیراندازی|شلیک|گلوله جنگی|گلوله|ساچمه)/i;
         const deathsTagRegex = /(?:bodies?|body bags?|killed|killings?|dead|fatalities?|corpse|death(?! to\b)|killed|murdered|deaths|کشته|کشتار|اجساد|جسد|پیکر|کیسه جسد)/i;
 
@@ -459,12 +445,7 @@
 
         const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView, isPerCapita, onTogglePerCapita }) => {
             const processedData = useMemo(() => {
-                const datesInData = [...new Set(data.map(d => d.date))].sort();
-                const chartEndDate = "2026-01-13";
-                const rangeEnd = datesInData.length && chartEndDate > datesInData[datesInData.length - 1]
-                    ? chartEndDate
-                    : datesInData[datesInData.length - 1];
-                const dates = datesInData.length ? buildDateRange(datesInData[0], rangeEnd) : [];
+                const dates = [...new Set(data.map(d => d.date))].sort();
                 const series = dates.map(date => {
                     const dayEvents = data.filter(d => d.date === date);
                     return {
@@ -571,7 +552,7 @@
                 if (!dateString) return "";
                 const date = new Date(`${dateString}T00:00:00Z`);
                 if (Number.isNaN(date.getTime())) return dateString;
-                const locale = lang === 'fa' ? 'fa-IR-u-ca-persian' : 'en-US';
+                const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
                 return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' });
             };
             const blackoutStartDate = "2026-01-08";
@@ -1392,12 +1373,7 @@
 
             // --- Timeline Data ---
             const { uniqueDates, minDate, maxDate } = useMemo(() => {
-                const datesInData = [...new Set(allIncidents.map(i => i.date))].sort();
-                const timelineEndDate = "2026-01-13";
-                const rangeEnd = datesInData.length && timelineEndDate > datesInData[datesInData.length - 1]
-                    ? timelineEndDate
-                    : datesInData[datesInData.length - 1];
-                const dates = datesInData.length ? buildDateRange(datesInData[0], rangeEnd) : [];
+                const dates = [...new Set(allIncidents.map(i => i.date))].sort();
                 return { uniqueDates: dates, minDate: dates[0], maxDate: dates[dates.length - 1] };
             }, [allIncidents]);
 
