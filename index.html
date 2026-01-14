@@ -366,8 +366,6 @@
             "Zanjan": "زنجان"
         };
 
-        const requiredDates = ['2026-01-13'];
-
         const formatDateWithWeekday = (dateString, lang = 'en') => {
             if (!dateString) return '';
             const date = new Date(`${dateString}T00:00:00Z`);
@@ -447,7 +445,7 @@
 
         const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView, isPerCapita, onTogglePerCapita }) => {
             const processedData = useMemo(() => {
-                const dates = [...new Set([...data.map(d => d.date), ...requiredDates])].sort();
+                const dates = [...new Set(data.map(d => d.date))].sort();
                 const series = dates.map(date => {
                     const dayEvents = data.filter(d => d.date === date);
                     return {
@@ -1375,7 +1373,7 @@
 
             // --- Timeline Data ---
             const { uniqueDates, minDate, maxDate } = useMemo(() => {
-                const dates = [...new Set([...allIncidents.map(i => i.date), ...requiredDates])].sort();
+                const dates = [...new Set(allIncidents.map(i => i.date))].sort();
                 return { uniqueDates: dates, minDate: dates[0], maxDate: dates[dates.length - 1] };
             }, [allIncidents]);
 
