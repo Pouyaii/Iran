@@ -445,7 +445,12 @@
 
         const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView, isPerCapita, onTogglePerCapita }) => {
             const processedData = useMemo(() => {
-                const dates = [...new Set(data.map(d => d.date))].sort();
+                const dates = [...new Set(data.map(d => d.date))];
+                const chartAnchorDate = "2026-01-13";
+                if (!dates.includes(chartAnchorDate)) {
+                    dates.push(chartAnchorDate);
+                }
+                dates.sort();
                 const series = dates.map(date => {
                     const dayEvents = data.filter(d => d.date === date);
                     return {
