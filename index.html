@@ -445,10 +445,7 @@
 
         const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView, isPerCapita, onTogglePerCapita }) => {
             const processedData = useMemo(() => {
-                const todayString = new Date().toISOString().slice(0, 10);
-                const uniqueDates = new Set(data.map(d => d.date));
-                uniqueDates.add(todayString);
-                const dates = [...uniqueDates].sort();
+                const dates = [...new Set(data.map(d => d.date))].sort();
                 const series = dates.map(date => {
                     const dayEvents = data.filter(d => d.date === date);
                     return {
