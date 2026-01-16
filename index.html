@@ -277,6 +277,7 @@
                 dateNote: "Date reflects tweet date.",
                 location: "Location",
                 description: "Description",
+                note: "Note",
                 tags: "Tags",
                 gunfireTag: "Gunfire",
                 deathsTag: "Deaths",
@@ -321,6 +322,7 @@
                 dateNote: "تاریخ منعکس کننده تاریخ توییت است.",
                 location: "مکان",
                 description: "توضیحات",
+                note: "یادداشت",
                 tags: "برچسب‌ها",
                 gunfireTag: "تیراندازی",
                 deathsTag: "کشته‌ها",
@@ -983,7 +985,7 @@
                 return () => window.removeEventListener('keydown', handleKeyDown);
             }, [focusIncident, idSearchBuffer, idSearchMode, showUnverified, unverifiedIncidents, verifiedIncidents]);
 
-            // --- Data Definitions (Updated with 196 verified and 201 unverified) ---
+            // --- Data Definitions (Updated with 204 verified and 201 unverified) ---
             const verifiedIncidents = useMemo(() => tagIncidents([
                 {"id": 1, "verified": true, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "desc_fa": "عقب راندن نیروهای پلیس و امنیتی توسط معترضان در خیابان جمهوری تهران", "coords": [35.6927461, 51.4255329], "province": "Tehran", "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null},
                 {"id": 2, "verified": true, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "desc_fa": "تجمع معترضان مقابل مرکز خرید قصر در جزیره قشم", "coords": [26.968793, 56.075395], "province": "Hormozgan", "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null},
@@ -1178,7 +1180,15 @@
                 {"id": 193, "verified": true, "desc": "Large crowd of people marching in the street", "desc_fa": "جمعیت بزرگی از مردم در خیابان راهپیمایی می‌کنند", "coords": [35.780711, 51.4633], "province": "Tehran", "link": "https://x.com/mamlekate/status/2009768954525307211", "date": "2026-01-09", "size": "big", "alt": "https://x.com/GeoConfirmed/status/2009780674396307771"},
                 {"id": 194, "verified": true, "desc": "Crowd of protestors gathered around a fire", "desc_fa": "جمعی از معترضان پیرامون آتش تجمع کرده‌اند", "coords": [29.878435, 52.806491], "province": "Fars", "link": "https://x.com/Savakzadeh/status/2010841472904376349", "date": "2026-01-12", "size": "medium", "alt": "https://x.com/GeoConfirmed/status/2011400983968993672"},
                 {"id": 195, "verified": true, "desc": "Crowd of protestors and security forces firing", "desc_fa": "جمعی از معترضان و نیروهای امنیتی در حال تیراندازی", "coords": [35.632855, 51.409872], "province": "Tehran", "link": "https://x.com/mamlekate/status/2010539322202808768", "date": "2026-01-11", "size": "medium", "alt": "https://x.com/GeoConfirmed/status/2011400637855010825"},
-                {"id": 196, "verified": true, "desc": "Sepah Bank attacked by protestors", "desc_fa": "بانک سپه مورد حمله معترضان قرار گرفت", "coords": [38.24736, 48.29079], "province": "East Azerbaijan", "link": "https://x.com/zarGEOINT/status/2009694978273141241", "date": "2026-01-09", "size": "small", "alt": "https://x.com/GeoConfirmed/status/2011400520611561653"}
+                {"id": 196, "verified": true, "desc": "Sepah Bank attacked by protestors", "desc_fa": "بانک سپه مورد حمله معترضان قرار گرفت", "coords": [38.24736, 48.29079], "province": "East Azerbaijan", "link": "https://x.com/zarGEOINT/status/2009694978273141241", "date": "2026-01-09", "size": "small", "alt": "https://x.com/GeoConfirmed/status/2011400520611561653"},
+                {"id": 197, "verified": true, "desc": "[GRAPHIC] Young protester shot in the head and leg, later killed", "desc_fa": "[گرافیک] معترض جوان پس از اصابت گلوله به سر و پا کشته شد", "coords": [35.851865, 50.964584], "province": "Alborz", "link": "https://x.com/Vahid/status/2011471885578518638", "date": "2026-01-09", "size": "medium", "alt": "https://x.com/Vahid/status/2011473222219260141", "note": "Coordinates for this incident are approximate.", "note_fa": "مختصات این حادثه تقریبی است."},
+                {"id": 198, "verified": true, "desc": "Protesters dancing in the street around a fire", "desc_fa": "معترضان در خیابان دور آتش می‌رقصند", "coords": [35.760297, 51.335292], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2011564595199295897", "date": "2026-01-09", "size": "big", "alt": null},
+                {"id": 199, "verified": true, "desc": "Image showing graffiti and a burned billboard in the wealthy Tajrish neighborhood", "desc_fa": "تصویری از گرافیتی و بیلبورد سوخته در محله مرفه تجریش", "coords": [35.807685, 51.419586], "province": "Tehran", "link": "https://x.com/andynovy/status/2011452955606810642", "date": "2026-01-09", "size": "small", "alt": "https://x.com/GeoRaccoon/status/2011484408583279056", "note": "The reported date is still being verified.", "note_fa": "تاریخ گزارش‌شده هنوز در حال تأیید است."},
+                {"id": 200, "verified": true, "desc": "Protesters chanting \"death to the dictator!\" in the street", "desc_fa": "معترضان در خیابان شعار «مرگ بر دیکتاتور!» می‌دهند", "coords": [37.545815, 45.067014], "province": "West Azerbaijan", "link": "https://x.com/vahid__bahman/status/2011464956185645412", "date": "2026-01-11", "size": "big", "alt": "https://x.com/UnSansVisage/status/2011535555834818987"},
+                {"id": 201, "verified": true, "desc": "Large crowd of protesters marching and taking over the street", "desc_fa": "جمعیت بزرگی از معترضان راهپیمایی کرده و خیابان را در اختیار می‌گیرند", "coords": [34.089091, 49.686692], "province": "Markazi", "link": "https://x.com/Rfrenss/status/2011440727738421299", "date": "2026-01-08", "size": "big", "alt": "https://x.com/EndlessWint_r/status/2011497070016844081"},
+                {"id": 202, "verified": true, "desc": "Large crowd of mourners chanting \"Death to Khamenei\" among other anti-IRI slogans", "desc_fa": "جمعیت بزرگی از عزاداران با شعار «مرگ بر خامنه‌ای» و دیگر شعارهای ضد نظام", "coords": [32.985165, 47.423083], "province": "Ilam", "link": "https://x.com/eisabazyar1/status/2011499328460713996", "date": "2026-01-11", "size": "big", "alt": "https://x.com/EndlessWint_r/status/2011605725538295996"},
+                {"id": 203, "verified": true, "desc": "Security forces firing live ammunition during protests with shouting and gunfire", "desc_fa": "نیروهای امنیتی در جریان اعتراضات با گلوله جنگی تیراندازی می‌کنند و صدای فریاد و تیراندازی شنیده می‌شود", "coords": [32.38094, 48.3974], "province": "Khuzestan", "link": "https://x.com/zarGEOINT/status/2011910684766777541", "date": "2026-01-08", "size": "small", "alt": "https://x.com/zarGEOINT/status/2011913047523143975", "note": "The reported date is still being verified.", "note_fa": "تاریخ گزارش‌شده هنوز در حال تأیید است."},
+                {"id": 204, "verified": true, "desc": "[GRAPHIC] Scores of body bags of people killed in protests at Kahrizak Forensic Medicine Center", "desc_fa": "[گرافیک] ده‌ها کیسه جسد از کشته‌شدگان اعتراضات در مرکز پزشکی قانونی کهریزک", "coords": [35.518032, 51.369954], "province": "Tehran", "link": "https://x.com/Vahid/status/2011944625934573876", "date": "2026-01-09", "size": "big", "alt": null}
             
             
             ]), []);
@@ -1880,6 +1890,17 @@
                                             {lang === 'fa' && selectedIncident.desc_fa ? selectedIncident.desc_fa : selectedIncident.desc}
                                         </div>
                                     </div>
+
+                                    {selectedIncident.note && (
+                                        <div className={`rounded-lg border px-3 py-2 text-xs md:text-sm font-medium ${isDarkMode ? 'border-slate-500/40 bg-slate-500/10 text-slate-100' : 'border-slate-300/70 bg-slate-50 text-slate-700'}`}>
+                                            <div className="text-[10px] uppercase tracking-wide font-bold opacity-80 mb-1">
+                                                {t.note}
+                                            </div>
+                                            <div>
+                                                {lang === 'fa' && selectedIncident.note_fa ? selectedIncident.note_fa : selectedIncident.note}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {selectedIncident.tags?.length > 0 && (
                                         <div className="space-y-2">
