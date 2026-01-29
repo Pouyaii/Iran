@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Iran Protest Waves: 1999 - 2026</title>
+    
+    <!-- Google Fonts: Inter for English, Vazirmatn for Farsi -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        farsi: ['Vazirmatn', 'sans-serif'],
+                    },
+                    screens: {
+                        'xs': '375px',
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { transition: background-color 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
+        
+        /* Mobile-First Chart Height */
+        .chart-container { position: relative; height: 50vh; width: 100%; }
+        @media (min-width: 768px) { .chart-container { height: 65vh; } }
+        
+        /* Custom Toggle Logic */
+        .toggle-checkbox:checked {
+            border-color: #10b981;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #10b981;
+        }
+        
+        /* Link Styles */
+        .link-group a {
+            position: relative;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px; /* Larger touch target */
+            border-radius: 6px;
+        }
+        @media (min-width: 768px) {
+            .link-group a { padding: 4px 8px; gap: 4px; }
+        }
+
+        html:not(.dark) .link-group a:hover { background-color: #f1f5f9; color: #be123c; }
+        html.dark .link-group a:hover { background-color: #334155; color: #fb7185; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200 font-sans pb-12">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
+        <!-- Header -->
+        <header class="mb-6 md:mb-8 flex flex-col md:flex-row justify-between items-start md:items-center relative gap-4">
+            <div class="text-left md:rtl:text-right w-full pr-24 md:pr-0">
+                <h1 id="header-title" class="text-2xl md:text-4xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 leading-tight">Iran Protest Crackdowns</h1>
+                <p id="header-desc" class="text-slate-500 dark:text-slate-400 text-sm md:text-lg">Comparing the scale of state violence from 1999 to Jan 2026</p>
+            </div>
+            
+            <!-- Floating Controls for Mobile -->
+            <div class="flex items-center gap-2 absolute top-0 right-0 md:relative">
+                <button onclick="toggleLang()" class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-farsi font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-200 shadow-sm">
+                    فارسی
+                </button>
+                <button onclick="toggleTheme()" class="p-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400">
+                    <svg id="icon-sun" class="w-5 h-5 text-amber-500 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Controls -->
+        <div class="flex flex-col md:flex-row justify-center items-stretch md:items-center gap-4 md:gap-6 mb-8 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-3xl mx-auto transition-colors">
+            
+            <!-- Metric Buttons -->
+            <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-lg flex md:inline-flex transition-colors dir-ltr">
+                <button onclick="setMetric('deaths')" id="btn-deaths" class="flex-1 md:flex-none px-4 md:px-6 py-2.5 md:py-2 rounded-md text-sm font-semibold transition-all shadow-sm">
+                    Deaths
+                </button>
+                <button onclick="setMetric('arrests')" id="btn-arrests" class="flex-1 md:flex-none px-4 md:px-6 py-2.5 md:py-2 rounded-md text-sm font-semibold transition-all">
+                    Arrests
+                </button>
+            </div>
+
+            <!-- 2026 Toggle -->
+            <div class="flex items-center justify-between md:justify-start gap-3 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 pt-4 md:pt-0 pl-0 md:pl-6 rtl:md:pl-0 rtl:md:border-l-0 rtl:md:border-r rtl:md:pr-6 transition-colors">
+                <span id="label-2026" class="text-sm font-medium text-slate-600 dark:text-slate-300">Include Jan 2026:</span>
+                
+                <!-- Fixed RTL/LTR Toggle Structure -->
+                <label class="relative inline-flex items-center cursor-pointer" dir="ltr">
+                    <input type="checkbox" id="toggle-2026" class="sr-only peer" checked onchange="toggle2026()">
+                    <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-rose-300 dark:peer-focus:ring-rose-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="bg-white dark:bg-slate-900 p-3 md:p-8 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-800 mb-8 transition-colors">
+            <div class="chart-container">
+                <canvas id="protestChart"></canvas>
+            </div>
+            <!-- Legend -->
+            <div class="mt-6 flex flex-wrap justify-center items-center gap-4 md:gap-10 text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400">
+                <div class="flex items-center gap-1.5">
+                    <span class="block w-4 h-4 rounded bg-rose-200 opacity-50 border border-rose-300 dark:border-rose-800" id="legend-high"></span>
+                    <span id="legend-txt-high">High Estimate</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="block w-4 h-4 rounded bg-rose-600 opacity-90 shadow-sm" id="legend-mod"></span>
+                    <span id="legend-txt-mod">Moderate Estimate</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="block w-4 h-4 rounded bg-rose-900 opacity-90 shadow-sm" id="legend-low"></span>
+                    <span id="legend-txt-low">Low Estimate</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Grid -->
+        <h2 id="details-header" class="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 px-1">Details and Sources</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" id="details-grid">
+            <!-- Cards injected by JS -->
+        </div>
+
+    </div>
+
+<script>
+    // --- Localization Utils ---
+    const toFarsiNumber = (n) => {
+        if (n === null || n === undefined) return '';
+        const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        return n.toString().replace(/\d/g, x => farsiDigits[x]);
+    };
+
+    const formatNum = (n) => isFarsi ? toFarsiNumber(n.toLocaleString()) : n.toLocaleString();
+
+    // --- Data ---
+    const masterData = [
+        {
+            id: '1999',
+            en: { 
+                title: "July 1999 Student Protests", 
+                desc: "Triggered by the closure of reformist newspaper 'Salam' and raids on dormitories. While the state admitted to 1 death, HRW confirmed at least 4.",
+                src_low: "Official Estimate", src_mod: "Retrospective Estimates", src_high: "Student Groups"
+            },
+            fa: {
+                title: "۱۸ تیر ۱۳۷۸ (کوی دانشگاه)",
+                desc: "در پی توقیف روزنامه سلام و حمله به خوابگاه دانشجویان. دولت تنها ۱ کشته را تایید کرد اما دیده‌بان حقوق بشر ۴ و گروه‌های دانشجویی ارقام بالاتری را گزارش دادند.",
+                src_low: "آمار رسمی", src_mod: "برآوردهای تاریخی", src_high: "گروه‌های دانشجویی"
+            },
+            deaths: { low: 1, mod: 7, high: 17, links: ["https://www.brookings.edu/articles/remembering-irans-student-protests-fourteen-years-later/", "https://en.wikipedia.org/wiki/1999_Iranian_student_protests", "https://en.wikipedia.org/wiki/1999_Iranian_student_protests"] },
+            arrests: { low: 1200, mod: 1400, high: 1500, links: ["https://en.wikipedia.org/wiki/1999_Iranian_student_protests", "https://en.wikipedia.org/wiki/1999_Iranian_student_protests", "https://www.brookings.edu/articles/remembering-irans-student-protests-fourteen-years-later/"] }
+        },
+        {
+            id: '2009',
+            en: {
+                title: "2009 Green Movement",
+                desc: "Triggered by the disputed presidential election. The 'Committee of 72' documented 72 specific victims, debunking the official toll of 37.",
+                src_low: "Official Govt Count", src_mod: "Opposition Committee", src_high: "Human Rights Orgs"
+            },
+            fa: {
+                title: "۱۳۸۸ (جنبش سبز)",
+                desc: "در اعتراض به نتایج انتخابات ریاست جمهوری. کمیته ۷۲ تن نام ۷۲ قربانی را مستند کرد که آمار رسمی ۳۷ نفر را رد می‌کرد.",
+                src_low: "آمار رسمی دولت", src_mod: "کمیته پیگیری", src_high: "سازمان‌های حقوق بشر"
+            },
+            deaths: { low: 37, mod: 72, high: 200, links: ["https://2009-2017.state.gov/j/drl/rls/hrrpt/2009/nea/136068.htm", "https://www.pbs.org/wgbh/pages/frontline/tehranbureau/2010/06/martyrs-of-the-green-movement.html", "https://2009-2017.state.gov/j/drl/rls/hrrpt/2009/nea/136068.htm"] },
+            arrests: { low: 4000, mod: 5000, high: null, links: ["https://2009-2017.state.gov/j/drl/rls/hrrpt/2009/nea/136068.htm", "https://www.theguardian.com/world/2010/jun/09/iran-election-demonstration-green-repression", ""] }
+        },
+        {
+            id: '2017',
+            en: {
+                title: "2017-2018 (Dey Mah)",
+                desc: "Triggered by high inflation. HRANA verified 25 deaths, closely matching admissions by local MPs.",
+                src_low: "Official Report", src_mod: "Human Rights Watch", src_high: "Opposition Media"
+            },
+            fa: {
+                title: "دی ۱۳۹۶",
+                desc: "در اعتراض به گرانی و تورم. هرانا مرگ ۲۵ نفر را تایید کرد که نزدیک به آمار نمایندگان مجلس بود.",
+                src_low: "گزارش رسمی", src_mod: "دیده‌بان حقوق بشر", src_high: "رسانه‌های اپوزیسیون"
+            },
+            deaths: { low: 22, mod: 25, high: null, links: ["https://www.canada.ca/en/security-intelligence-service/corporate/publications/a-balancing-act-whats-next-for-iran/the-art-of-endurance-the-islamic-republic-at-40.html", "https://www.hrw.org/news/2018/01/02/iran-investigate-killings-protesters", ""] },
+            arrests: { low: 3700, mod: 4972, high: null, links: ["https://www.aljazeera.com/news/2018/1/9/3700-arrested-during-protests-in-iran-mp", "https://www.en-hrana.org/wp-content/uploads/2019/03/HRAI-Annual-Reoprt-2018-english.pdf", ""] }
+        },
+        {
+            id: '2019',
+            en: {
+                title: "Nov 2019 (Bloody Nov)",
+                desc: "Triggered by fuel price hike. Amnesty verified 300+ deaths. Reuters reported 1,500 based on leaks.",
+                src_low: "Interior Ministry", src_mod: "Amnesty Intl", src_high: "Reuters (Leaks)"
+            },
+            fa: {
+                title: "آبان خونین ۱۳۹۸",
+                desc: "در پی افزایش قیمت بنزین. عفو بین‌الملل ۳۰۴ کشته را تایید کرد. رویترز به نقل از منابع داخلی آمار را ۱۵۰۰ نفر اعلام کرد.",
+                src_low: "وزارت کشور", src_mod: "عفو بین‌الملل", src_high: "رویترز (منابع داخلی)"
+            },
+            deaths: { low: 225, mod: 304, high: 1500, links: ["https://en.wikipedia.org/wiki/2019%E2%80%932020_Iranian_protests", "https://amnesty.ca/human-rights-news/iran-thousands-arbitrarily-detained-and-risk-torture-chilling-post-protest-crackdown/", "https://www.reuters.com/article/us-iran-protests-specialreport-idUSKBN1YR0QR"] },
+            arrests: { low: 7000, mod: 7000, high: 8000, links: ["https://www.hrw.org/news/2019/11/27/iran-deliberate-coverup-brutal-crackdown", "https://www.hrw.org/news/2019/11/27/iran-deliberate-coverup-brutal-crackdown", "https://en.radiofarda.com/a/iran-jails-at-least-8-000-following-november-protests-/30309530.html"] }
+        },
+        {
+            id: '2022',
+            en: {
+                title: "2022 (Mahsa Amini)",
+                desc: "Triggered by death of Mahsa Amini. IHR verified 551 deaths. Govt claimed mass amnesty for 22,000+.",
+                src_low: "State Media", src_mod: "IHR (Oslo)", src_high: "IHR / HRANA"
+            },
+            fa: {
+                title: "۱۴۰۱ (زن، زندگی، آزادی)",
+                desc: "در پی کشته‌شدن مهسا امینی. حقوق بشر ایران ۵۵۱ کشته را تایید کرد. قوه قضاییه مدعی عفو ۲۲ هزار نفر شد.",
+                src_low: "رسانه‌های دولتی", src_mod: "حقوق بشر ایران (اسلو)", src_high: "حقوق بشر ایران"
+            },
+            deaths: { low: 200, mod: 551, high: null, links: ["https://en.wikipedia.org/wiki/Mahsa_Amini_protests", "https://iranhr.net/en/articles/6200/", ""] },
+            arrests: { low: 19262, mod: 22000, high: null, links: ["https://www.state.gov/reports/2022-country-reports-on-human-rights-practices/iran/", "https://www.pbs.org/newshour/world/iran-is-responsible-for-the-physical-violence-that-killed-mahsa-amini-in-2022-un-probe-finds", ""] }
+        },
+        {
+            id: '2026',
+            en: {
+                title: "Jan 2026",
+                desc: "Triggered by currency devaluation & blackouts. UN Special Rapporteur cites medical sources for high estimate.",
+                src_low: "Govt Statement", src_mod: "HRANA", src_high: "Iran Intl (Leaks)"
+            },
+            fa: {
+                title: "دی/بهمن ۱۴۰۴",
+                desc: "بحران ارز و قطعی برق. گزارشگر ویژه سازمان ملل به نقل از منابع پزشکی آمار بالایی را گزارش داده است.",
+                src_low: "بنیاد شهید", src_mod: "هرانا", src_high: "ایران اینترنشنال"
+            },
+            deaths: { low: 3117, mod: 6126, high: 36500, links: ["https://www.rmoutlook.com/national-business/iran-offers-first-government-issued-death-toll-from-protest-crackdown-one-far-lower-than-activists-11768441", "https://www.en-hrana.org/day-32-of-protests-limited-internet-access-ongoing-arrests-and-growing-international-pressure/", "https://www.iranintl.com/en/202601277218"] },
+            arrests: { low: 26000, mod: 41880, high: 50000, links: ["https://www.walkfree.org/news/2026/economic-protests-expose-daily-hardship-and-risks-for-people-in-iran/", "https://www.en-hrana.org/day-32-of-protests-limited-internet-access-ongoing-arrests-and-growing-international-pressure/", "https://www.amnesty.org/en/latest/campaigns/2026/01/what-happened-at-the-protests-in-iran/"] }
+        }
+    ];
+
+    const uiStrings = {
+        en: {
+            title: "Iran Protest Crackdowns",
+            subtitle: "Comparing the scale of state violence from 1999 to Jan 2026",
+            deaths: "Deaths",
+            arrests: "Arrests",
+            include2026: "Include Jan 2026:",
+            high: "High Estimate",
+            mod: "Moderate Estimate",
+            low: "Low Estimate",
+            details: "Details and Sources",
+            estSource: "Estimate Source",
+            range: "Range",
+            ongoing: "Ongoing",
+            modTag: "Moderate(Est)"
+        },
+        fa: {
+            title: "سرکوب اعتراضات ایران",
+            subtitle: "مقایسه ابعاد خشونت دولتی از ۱۳۷۸ تا ۱۴۰۴",
+            deaths: "کشته‌شدگان",
+            arrests: "بازداشت‌شدگان",
+            include2026: "شامل دی/بهمن ۱۴۰۴:",
+            high: "تخمین بالا",
+            mod: "تخمین میانه",
+            low: "تخمین پایین",
+            details: "جزئیات و منابع",
+            estSource: "منبع تخمین",
+            range: "بازه",
+            ongoing: "در جریان",
+            modTag: "میانه (تخمین)"
+        }
+    };
+
+    const chartColors = {
+        deaths: {
+            high: 'rgba(251, 113, 133, 0.3)', // Light Rose
+            mod: 'rgba(225, 29, 72, 0.9)',    // Rose 600
+            low:  'rgba(136, 19, 55, 0.8)'    // Dark Rose
+        },
+        arrests: {
+            high: 'rgba(148, 163, 184, 0.4)', // Light Slate
+            mod: 'rgba(71, 85, 105, 0.9)',    // Slate 600
+            low:  'rgba(15, 23, 42, 0.8)'     // Dark Slate
+        }
+    };
+
+    // State
+    let currentMetric = 'deaths';
+    let show2026 = true;
+    let isDark = false;
+    let isFarsi = false;
+    let myChart = null;
+
+    // --- State Management ---
+    function toggleLang() {
+        isFarsi = !isFarsi;
+        document.body.dir = isFarsi ? 'rtl' : 'ltr';
+        document.body.classList.toggle('font-farsi', isFarsi);
+        document.body.classList.toggle('font-sans', !isFarsi);
+        
+        // Ensure buttons update their styles if language flips context
+        updateButtonStyles();
+        updateUIText();
+        renderCards();
+        updateChartData();
+    }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        isDark = !isDark;
+        html.classList.toggle('dark', isDark);
+        html.classList.toggle('light', !isDark);
+        
+        updateButtonStyles();
+        updateChartTheme();
+        renderCards(); 
+    }
+
+    function updateButtonStyles() {
+        const btnDeaths = document.getElementById('btn-deaths');
+        const btnArrests = document.getElementById('btn-arrests');
+
+        // Define styles
+        const activeClass = isDark 
+            ? ["bg-slate-700", "text-white", "shadow-sm"] 
+            : ["bg-white", "text-rose-700", "ring-1", "ring-rose-200", "shadow-sm"];
+        
+        const inactiveClass = isDark 
+            ? ["text-slate-400", "hover:text-white"] 
+            : ["text-slate-600", "hover:text-slate-900"];
+
+        // Clear existing custom classes
+        btnDeaths.className = "flex-1 md:flex-none px-4 md:px-6 py-2.5 md:py-2 rounded-md text-sm font-semibold transition-all";
+        btnArrests.className = "flex-1 md:flex-none px-4 md:px-6 py-2.5 md:py-2 rounded-md text-sm font-semibold transition-all";
+
+        if (currentMetric === 'deaths') {
+            btnDeaths.classList.add(...(isDark ? ["bg-slate-700", "text-rose-400", "shadow-sm"] : ["bg-white", "text-rose-700", "ring-1", "ring-rose-200", "shadow-sm"]));
+            btnArrests.classList.add(...(isDark ? ["text-slate-400", "hover:text-white"] : ["text-slate-600", "hover:text-slate-900"]));
+            updateLegendColors('deaths');
+        } else {
+            btnArrests.classList.add(...(isDark ? ["bg-slate-700", "text-slate-100", "shadow-sm"] : ["bg-white", "text-slate-800", "ring-1", "ring-slate-200", "shadow-sm"]));
+            btnDeaths.classList.add(...(isDark ? ["text-slate-400", "hover:text-rose-400"] : ["text-slate-600", "hover:text-rose-700"]));
+            updateLegendColors('arrests');
+        }
+    }
+
+    function updateLegendColors(metric) {
+        const lHigh = document.getElementById('legend-high');
+        const lMod = document.getElementById('legend-mod');
+        const lLow = document.getElementById('legend-low');
+
+        if (metric === 'deaths') {
+            lHigh.className = "block w-4 h-4 rounded bg-rose-200 opacity-50 border border-rose-300 dark:border-rose-800";
+            lMod.className = "block w-4 h-4 rounded bg-rose-600 opacity-90 shadow-sm";
+            lLow.className = "block w-4 h-4 rounded bg-rose-900 opacity-90 shadow-sm";
+        } else {
+            lHigh.className = "block w-4 h-4 rounded bg-slate-300 opacity-40";
+            lMod.className = "block w-4 h-4 rounded bg-slate-600 opacity-90 shadow-sm";
+            lLow.className = "block w-4 h-4 rounded bg-slate-900 opacity-90 shadow-sm";
+        }
+    }
+
+    function updateUIText() {
+        const str = isFarsi ? uiStrings.fa : uiStrings.en;
+        
+        document.getElementById('header-title').innerText = str.title;
+        document.getElementById('header-desc').innerText = str.subtitle;
+        document.getElementById('btn-deaths').innerText = str.deaths;
+        document.getElementById('btn-arrests').innerText = str.arrests;
+        document.getElementById('label-2026').innerText = str.include2026;
+        document.getElementById('legend-txt-high').innerText = str.high;
+        document.getElementById('legend-txt-mod').innerText = str.mod;
+        document.getElementById('legend-txt-low').innerText = str.low;
+        document.getElementById('details-header').innerText = str.details;
+    }
+
+    function updateChartTheme() {
+        if (!myChart) return;
+        const gridColor = isDark ? '#334155' : '#f1f5f9';
+        const tickColor = isDark ? '#94a3b8' : '#64748b';
+        myChart.options.scales.y.grid.color = gridColor;
+        myChart.options.scales.x.ticks.color = tickColor;
+        myChart.options.scales.y.ticks.color = tickColor;
+        myChart.update();
+    }
+
+    // --- Chart Data Logic ---
+    function getChartData() {
+        const dataToUse = show2026 ? masterData : masterData.slice(0, 5);
+        const langKey = isFarsi ? 'fa' : 'en';
+        
+        // Wrap long labels on mobile
+        const isMobile = window.innerWidth < 768;
+        const labels = dataToUse.map(d => {
+            const raw = d[langKey].title.split('(')[0].trim();
+            // Simple truncation or wrapping logic if needed
+            return isMobile && raw.length > 15 ? raw.substring(0, 12) + "..." : raw;
+        });
+
+        const low = dataToUse.map(d => d[currentMetric].low);
+        const mod = dataToUse.map(d => d[currentMetric].mod);
+        const high = dataToUse.map(d => d[currentMetric].high);
+
+        if (show2026 && currentMetric === 'arrests') {
+            const allVals = [...low, ...mod, ...high].filter(v => v !== null);
+            const rawMax = Math.max(...allVals);
+            if (high[5] !== null) { high[5] = rawMax * 1.35; }
+        }
+
+        const colors = chartColors[currentMetric];
+
+        return {
+            labels: labels,
+            datasets: [
+                {
+                    label: isFarsi ? uiStrings.fa.high : uiStrings.en.high,
+                    data: high,
+                    backgroundColor: colors.high,
+                    borderWidth: 0,
+                    order: 3,
+                    barPercentage: isMobile ? 0.75 : 0.65,
+                    categoryPercentage: 0.85
+                },
+                {
+                    label: isFarsi ? uiStrings.fa.mod : uiStrings.en.mod,
+                    data: mod,
+                    backgroundColor: colors.mod,
+                    borderWidth: 0,
+                    order: 2,
+                    barPercentage: isMobile ? 0.75 : 0.65,
+                    categoryPercentage: 0.85
+                },
+                {
+                    label: isFarsi ? uiStrings.fa.low : uiStrings.en.low,
+                    data: low,
+                    backgroundColor: colors.low,
+                    borderWidth: 0,
+                    order: 1, 
+                    barPercentage: isMobile ? 0.75 : 0.65,
+                    categoryPercentage: 0.85
+                }
+            ]
+        };
+    }
+
+    // --- Chart Initialization ---
+    function initChart() {
+        const ctx = document.getElementById('protestChart').getContext('2d');
+        const isMobile = window.innerWidth < 768;
+        const dataConfig = getChartData();
+
+        const dataLabelsPlugin = {
+            id: 'customLabels',
+            afterDatasetsDraw(chart) {
+                const { ctx, scales: { x, y } } = chart;
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                
+                const dsHigh = chart.data.datasets[0].data;
+                const dsMod = chart.data.datasets[1].data;
+                const dsLow = chart.data.datasets[2].data;
+                const metaHigh = chart.getDatasetMeta(0);
+                const WHITE = '#ffffff';
+                const BLACK = '#000000';
+                const OUTSIDE_COLOR = isDark ? WHITE : BLACK;
+
+                dsHigh.forEach((valHigh, index) => {
+                    const xPos = metaHigh.data[index].x;
+                    const valMod = dsMod[index];
+                    const valLow = dsLow[index];
+
+                    // Smaller font on mobile
+                    const fontSize = isMobile ? 10 : 11;
+                    const fontName = isFarsi ? 'Vazirmatn' : 'Inter';
+                    ctx.font = `bold ${fontSize}px ${fontName}`;
+
+                    let yHigh = valHigh !== null ? y.getPixelForValue(valHigh) - 6 : null;
+                    let yMod = valMod !== null ? y.getPixelForValue(valMod) + 16 : null; 
+                    let yLow = valLow !== null ? y.getPixelForValue(valLow) + 16 : null; 
+
+                    // Ongoing Logic
+                    if (currentMetric === 'arrests' && index === 5 && show2026) {
+                        ctx.font = `bold ${fontSize+1}px ${fontName}`;
+                        ctx.fillStyle = OUTSIDE_COLOR; 
+                        const ongoingText = isFarsi ? uiStrings.fa.ongoing : uiStrings.en.ongoing;
+                        ctx.fillText(ongoingText, xPos, 30); 
+                        
+                        ctx.font = `bold ${fontSize}px ${fontName}`;
+                        yMod = y.getPixelForValue(valMod) + 16;
+                        ctx.fillStyle = WHITE;
+                        ctx.fillText(formatNum(valMod), xPos, yMod);
+
+                        yLow = y.getPixelForValue(valLow) + 16;
+                        ctx.fillStyle = WHITE;
+                        if (Math.abs(yLow - yMod) < 16) { yLow += 14; }
+                        ctx.fillText(formatNum(valLow), xPos, yLow);
+                        return;
+                    }
+
+                    // Standard Logic
+                    if (valHigh !== null && valMod !== null && valHigh > valMod) {
+                        ctx.fillStyle = OUTSIDE_COLOR;
+                        ctx.fillText(formatNum(valHigh), xPos, yHigh);
+                    }
+
+                    if (valMod !== null) {
+                        let modInside = true;
+                        if (y.getPixelForValue(0) - y.getPixelForValue(valMod) < 25) {
+                            yMod = y.getPixelForValue(valMod) - 6; 
+                            ctx.fillStyle = OUTSIDE_COLOR; 
+                            modInside = false;
+                        } else {
+                            ctx.fillStyle = WHITE; 
+                        }
+                        if (valHigh !== null && !modInside && Math.abs(yMod - yHigh) < 14) { yMod += 14; }
+                        if (valLow === null || valMod > valLow) {
+                             ctx.fillText(formatNum(valMod), xPos, yMod);
+                        }
+                    }
+
+                    if (valLow !== null) {
+                        if (y.getPixelForValue(0) - y.getPixelForValue(valLow) > 20) {
+                            ctx.fillStyle = WHITE; 
+                            if (valMod !== null && Math.abs(yLow - yMod) < 14) { yLow += 14; }
+                            ctx.fillText(formatNum(valLow), xPos, yLow);
+                        }
+                    }
+                });
+                ctx.restore();
+            }
+        };
+
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: dataConfig,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                grouped: false, 
+                layout: { padding: { top: 30 } },
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grace: '10%',
+                        position: isFarsi ? 'right' : 'left', 
+                        grid: { color: isDark ? '#334155' : '#f1f5f9' },
+                        ticks: { 
+                            font: { family: isFarsi ? 'Vazirmatn' : 'Inter', size: isMobile ? 10 : 12 }, 
+                            color: isDark ? '#94a3b8' : '#64748b',
+                            callback: function(value) { 
+                                // On mobile, limit tick density or content if needed
+                                const formatted = formatNum(value);
+                                return isMobile && value > 1000 ? formatted.replace(',','') : formatted; 
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: isFarsi ? 'Vazirmatn' : 'Inter', size: isMobile ? 10 : 11 }, color: isDark ? '#94a3b8' : '#64748b' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleFont: { family: isFarsi ? 'Vazirmatn' : 'Inter' },
+                        bodyFont: { family: isFarsi ? 'Vazirmatn' : 'Inter' },
+                        rtl: isFarsi,
+                        textDirection: isFarsi ? 'rtl' : 'ltr',
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                if (context.dataset.label.includes(uiStrings.en.high) || context.dataset.label.includes(uiStrings.fa.high)) {
+                                     if (context.dataIndex === 5 && currentMetric === 'arrests' && show2026) {
+                                        return isFarsi ? "تخمین بالا: در جریان (نامشخص)" : "High: Ongoing (Indefinite)";
+                                    }
+                                }
+                                if (context.raw === null) return null;
+                                return `${context.dataset.label}: ${formatNum(context.raw)}`;
+                            }
+                        }
+                    }
+                },
+                animation: { duration: 500 }
+            },
+            plugins: [dataLabelsPlugin]
+        });
+    }
+
+    function setMetric(mode) {
+        currentMetric = mode;
+        updateButtonStyles();
+        renderCards();
+        updateChartData();
+    }
+
+    function toggle2026() {
+        show2026 = document.getElementById('toggle-2026').checked;
+        renderCards(); 
+        updateChartData();
+    }
+
+    function updateChartData() {
+        if (!myChart) return;
+        const newData = getChartData();
+        myChart.data.labels = newData.labels;
+        myChart.data.datasets = newData.datasets;
+        
+        // Update Chart Fonts and Axis position based on Language
+        myChart.options.scales.y.position = isFarsi ? 'right' : 'left';
+        myChart.options.scales.y.ticks.font.family = isFarsi ? 'Vazirmatn' : 'Inter';
+        myChart.options.scales.x.ticks.font.family = isFarsi ? 'Vazirmatn' : 'Inter';
+        myChart.options.plugins.tooltip.titleFont.family = isFarsi ? 'Vazirmatn' : 'Inter';
+        myChart.options.plugins.tooltip.bodyFont.family = isFarsi ? 'Vazirmatn' : 'Inter';
+        
+        myChart.update();
+    }
+
+    function renderCards() {
+        const grid = document.getElementById('details-grid');
+        grid.innerHTML = '';
+        
+        const cardsToShow = show2026 ? masterData : masterData.slice(0, 5);
+        const langKey = isFarsi ? 'fa' : 'en';
+        const str = isFarsi ? uiStrings.fa : uiStrings.en;
+
+        cardsToShow.forEach(item => {
+            const dataPoint = item[currentMetric];
+            const txt = item[langKey];
+            const isDeath = currentMetric === 'deaths';
+            
+            const modColor = isDark
+                ? (isDeath ? 'text-rose-300 bg-rose-900/30 border-rose-800' : 'text-slate-300 bg-slate-800 border-slate-700')
+                : (isDeath ? 'text-rose-700 bg-rose-50 border-rose-100' : 'text-slate-700 bg-slate-50 border-slate-100');
+            const rangeColor = isDark ? 'text-slate-400 bg-slate-900 border-slate-800' : 'text-slate-500 bg-white border-slate-200';
+            
+            let rangeText = "";
+            if (dataPoint.high) {
+                rangeText = `${formatNum(dataPoint.low)} - ${formatNum(dataPoint.high)}`;
+            } else {
+                rangeText = `> ${formatNum(dataPoint.low)}`;
+            }
+
+            const card = document.createElement('div');
+            card.className = "bg-white dark:bg-slate-900 p-5 md:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all flex flex-col h-full text-left rtl:text-right";
+            
+            // Build Sources
+            let sourceHtml = `
+                <a href="${dataPoint.links[0]}" target="_blank" class="text-xs text-slate-500 dark:text-slate-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-800 dark:bg-slate-400 opacity-60 flex-shrink-0"></span>
+                    <span class="font-semibold text-slate-700 dark:text-slate-200">${str.low} (${formatNum(dataPoint.low)}):</span> <span class="truncate">${txt.src_low}</span>
+                </a>
+                <a href="${dataPoint.links[1]}" target="_blank" class="text-xs text-slate-600 dark:text-slate-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0"></span>
+                    <span class="font-bold text-slate-900 dark:text-white">${str.mod.split(' ')[0]} (${formatNum(dataPoint.mod)}):</span> <span class="truncate">${txt.src_mod}</span>
+                </a>
+            `;
+            if (dataPoint.high) {
+                sourceHtml += `
+                <a href="${dataPoint.links[2]}" target="_blank" class="text-xs text-slate-500 dark:text-slate-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-300 dark:bg-rose-900 flex-shrink-0"></span>
+                    <span class="font-semibold text-slate-700 dark:text-slate-200">${str.high.split(' ')[0]} (${formatNum(dataPoint.high)}):</span> <span class="truncate">${txt.src_high}</span>
+                </a>`;
+            }
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg font-${isFarsi ? 'farsi' : 'sans'} leading-tight">${txt.title}</h3>
+                </div>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="text-xs font-bold px-2 py-1 rounded border ${modColor} font-${isFarsi ? 'farsi' : 'sans'}">
+                        ${str.modTag}: ${formatNum(dataPoint.mod)}
+                    </span>
+                    <span class="text-xs font-medium px-2 py-1 rounded border ${rangeColor} font-${isFarsi ? 'farsi' : 'sans'}">
+                        ${str.range}: ${rangeText}
+                    </span>
+                </div>
+                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4 flex-grow font-${isFarsi ? 'farsi' : 'sans'}">
+                    ${txt.desc}
+                </p>
+                <div class="pt-4 mt-auto border-t border-slate-100 dark:border-slate-800">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 mb-2 tracking-wider font-${isFarsi ? 'farsi' : 'sans'}">${str.estSource} (${isFarsi ? (currentMetric==='deaths'?str.deaths:str.arrests) : currentMetric})</p>
+                    <div class="flex flex-col gap-2 link-group font-${isFarsi ? 'farsi' : 'sans'}">
+                        ${sourceHtml}
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Handle Resize for Chart Fonts
+    window.addEventListener('resize', () => {
+        if(myChart && myChart.data && myChart.data.datasets) {
+             const isMobile = window.innerWidth < 768;
+             myChart.data.datasets.forEach(dataset => {
+                 dataset.barPercentage = isMobile ? 0.75 : 0.65;
+             });
+             myChart.update();
+        }
+    });
+
+    window.onload = function() {
+        initChart();
+        setMetric('deaths');
+    };
+
+</script>
+</body>
+</html>
