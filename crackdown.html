@@ -74,6 +74,11 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
         <!-- Header -->
         <header class="mb-6 md:mb-8 flex flex-col md:flex-row justify-between items-start md:items-center relative gap-4">
+            <div class="flex items-center w-full md:w-auto">
+                <button id="back-button" onclick="goBackToMap()" class="px-3 py-2 md:px-4 md:py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs md:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:shadow-md transition-all">
+                    Back to Map
+                </button>
+            </div>
             <div class="text-left md:rtl:text-right w-full pr-24 md:pr-0">
                 <h1 id="header-title" class="text-2xl md:text-4xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 leading-tight">Iran Protest Crackdowns</h1>
                 <p id="header-desc" class="text-slate-500 dark:text-slate-400 text-sm md:text-lg">Comparing the scale of state violence from 1999 to Jan 2026</p>
@@ -81,7 +86,7 @@
             
             <!-- Floating Controls for Mobile -->
             <div class="flex items-center gap-2 absolute top-0 right-0 md:relative">
-                <button onclick="toggleLang()" class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-farsi font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-200 shadow-sm">
+                <button id="lang-toggle" onclick="toggleLang()" class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-farsi font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-200 shadow-sm">
                     فارسی
                 </button>
                 <button onclick="toggleTheme()" class="p-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400">
@@ -264,7 +269,8 @@
             estSource: "Estimate Source",
             range: "Range",
             ongoing: "Ongoing",
-            modTag: "Moderate(Est)"
+            modTag: "Moderate(Est)",
+            back: "Back to Map"
         },
         fa: {
             title: "سرکوب اعتراضات ایران",
@@ -279,7 +285,8 @@
             estSource: "منبع تخمین",
             range: "بازه",
             ongoing: "در جریان",
-            modTag: "میانه (تخمین)"
+            modTag: "میانه (تخمین)",
+            back: "بازگشت به نقشه"
         }
     };
 
@@ -296,6 +303,11 @@
         }
     };
 
+    const initialParams = new URLSearchParams(window.location.search);
+    const initialLangParam = initialParams.get('lang');
+    const initialThemeParam = initialParams.get('theme');
+    const initialLayerParam = initialParams.get('layer');
+
     // State
     let currentMetric = 'deaths';
     let show2026 = true;
@@ -309,6 +321,7 @@
         document.body.dir = isFarsi ? 'rtl' : 'ltr';
         document.body.classList.toggle('font-farsi', isFarsi);
         document.body.classList.toggle('font-sans', !isFarsi);
+        document.documentElement.lang = isFarsi ? 'fa' : 'en';
         
         // Ensure buttons update their styles if language flips context
         updateButtonStyles();
@@ -377,6 +390,7 @@
         
         document.getElementById('header-title').innerText = str.title;
         document.getElementById('header-desc').innerText = str.subtitle;
+        document.getElementById('back-button').innerText = str.back;
         document.getElementById('btn-deaths').innerText = str.deaths;
         document.getElementById('btn-arrests').innerText = str.arrests;
         document.getElementById('label-2026').innerText = str.include2026;
@@ -384,6 +398,7 @@
         document.getElementById('legend-txt-mod').innerText = str.mod;
         document.getElementById('legend-txt-low').innerText = str.low;
         document.getElementById('details-header').innerText = str.details;
+        document.getElementById('lang-toggle').innerText = isFarsi ? 'EN' : 'فارسی';
     }
 
     function updateChartTheme() {
@@ -704,6 +719,44 @@
         });
     }
 
+    function applyInitialModes() {
+        if (initialLangParam === 'fa') {
+            isFarsi = true;
+            document.body.dir = 'rtl';
+            document.body.classList.add('font-farsi');
+            document.body.classList.remove('font-sans');
+            document.documentElement.lang = 'fa';
+        } else {
+            document.body.dir = 'ltr';
+            document.body.classList.add('font-sans');
+            document.body.classList.remove('font-farsi');
+            document.documentElement.lang = 'en';
+        }
+
+        if (initialThemeParam === 'dark') {
+            isDark = true;
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else if (initialThemeParam === 'light') {
+            isDark = false;
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+        }
+
+        updateUIText();
+        updateButtonStyles();
+    }
+
+    function goBackToMap() {
+        const params = new URLSearchParams();
+        params.set('lang', isFarsi ? 'fa' : 'en');
+        params.set('theme', isDark ? 'dark' : 'light');
+        if (initialLayerParam) {
+            params.set('layer', initialLayerParam);
+        }
+        window.location.href = `index.html?${params.toString()}`;
+    }
+
     // Handle Resize for Chart Fonts
     window.addEventListener('resize', () => {
         if(myChart && myChart.data && myChart.data.datasets) {
@@ -716,6 +769,7 @@
     });
 
     window.onload = function() {
+        applyInitialModes();
         initChart();
         setMetric('deaths');
     };
