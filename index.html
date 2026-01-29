@@ -253,6 +253,7 @@
                 showChart: "Show Chart",
                 showUnverified: "Show Unverified",
                 hideUnverified: "Hide Unverified",
+                compareScale: "Compare Scale",
                 timeline: "Timeline Control",
                 showingAll: "Showing All Events",
                 all: "All",
@@ -298,6 +299,7 @@
                 showChart: "نمایش نمودار",
                 showUnverified: "نمایش تأیید نشده",
                 hideUnverified: "پنهان کردن تأیید نشده",
+                compareScale: "مقایسه مقیاس",
                 timeline: "کنترل زمانی",
                 showingAll: "نمایش همه رویدادها",
                 all: "همه",
@@ -816,7 +818,15 @@
             const idTooltipsRef = useRef([]);
             
             const [isMapReady, setIsMapReady] = useState(false);
-            const [activeLayer, setActiveLayer] = useState('light');
+            const initialParams = new URLSearchParams(window.location.search);
+            const initialLang = initialParams.get('lang') === 'fa' ? 'fa' : 'en';
+            const initialLayerParam = initialParams.get('layer');
+            const initialTheme = initialParams.get('theme');
+            const initialLayer = ['light', 'dark', 'satellite'].includes(initialLayerParam)
+                ? initialLayerParam
+                : (initialTheme === 'dark' ? 'dark' : 'light');
+
+            const [activeLayer, setActiveLayer] = useState(initialLayer);
             const [zoomLevel, setZoomLevel] = useState(5);
             const [selectedIncident, setSelectedIncident] = useState(null);
             const [showGraph, setShowGraph] = useState(false);
@@ -827,7 +837,7 @@
             const [showIdTooltips, setShowIdTooltips] = useState(false);
             const [dateFilter, setDateFilter] = useState(null); 
             const [isPlaying, setIsPlaying] = useState(false);
-            const [lang, setLang] = useState('en'); 
+            const [lang, setLang] = useState(initialLang); 
             const [idSearchMode, setIdSearchMode] = useState(null);
             const [idSearchBuffer, setIdSearchBuffer] = useState('');
             
@@ -1691,6 +1701,15 @@
                 resetView();
             };
 
+            const handleCompareScale = () => {
+                const params = new URLSearchParams();
+                params.set('lang', lang);
+                params.set('theme', isDarkMode ? 'dark' : 'light');
+                params.set('layer', activeLayer);
+                params.set('device', window.innerWidth < 768 ? 'mobile' : 'desktop');
+                window.location.href = `crackdown.html?${params.toString()}`;
+            };
+
             const glassClass = isDarkMode ? "bg-gray-900/60 border-gray-700/50 text-white" : "bg-white/60 border-white/40 text-gray-700";
             const glassHover = isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80";
 
@@ -1770,6 +1789,14 @@
                             >
                                 <IconAlert className="w-5 h-5" />
                                 <span>{showUnverified ? t.hideUnverified : t.showUnverified}</span>
+                            </button>
+
+                            <button 
+                                onClick={handleCompareScale}
+                                className={`backdrop-blur-xl shadow-xl rounded-full px-3 py-2 md:px-4 md:py-2 border flex items-center justify-center space-x-2 text-[11px] md:text-sm font-semibold transition-all duration-200 active:scale-95 ${glassClass} ${glassHover} ${lang === 'fa' ? 'space-x-reverse font-[Vazirmatn]' : ''}`}
+                            >
+                                <IconChart className="w-5 h-5" />
+                                <span>{t.compareScale}</span>
                             </button>
                         </div>
                     </div>
