@@ -1783,20 +1783,20 @@
                                 <span>{t.showChart}</span>
                             </button>
 
-                             <button 
-                                onClick={() => setShowUnverified(!showUnverified)} 
-                                className={`backdrop-blur-xl shadow-xl rounded-full px-3 py-2 md:px-4 md:py-2 border flex items-center justify-center space-x-2 text-xs md:text-sm font-semibold transition-all duration-200 active:scale-95 ${glassClass} ${glassHover} ${lang === 'fa' ? 'space-x-reverse font-[Vazirmatn]' : ''}`}
-                            >
-                                <IconAlert className="w-5 h-5" />
-                                <span>{showUnverified ? t.hideUnverified : t.showUnverified}</span>
-                            </button>
-
                             <button 
                                 onClick={handleCompareScale}
                                 className={`backdrop-blur-xl shadow-xl rounded-full px-3 py-2 md:px-4 md:py-2 border flex items-center justify-center space-x-2 text-[11px] md:text-sm font-semibold transition-all duration-200 active:scale-95 ${glassClass} ${glassHover} ${lang === 'fa' ? 'space-x-reverse font-[Vazirmatn]' : ''}`}
                             >
                                 <IconChart className="w-5 h-5" />
                                 <span>{t.compareScale}</span>
+                            </button>
+
+                             <button 
+                                onClick={() => setShowUnverified(!showUnverified)} 
+                                className={`backdrop-blur-xl shadow-xl rounded-full px-3 py-2 md:px-4 md:py-2 border flex items-center justify-center space-x-2 text-xs md:text-sm font-semibold transition-all duration-200 active:scale-95 ${glassClass} ${glassHover} ${lang === 'fa' ? 'space-x-reverse font-[Vazirmatn]' : ''}`}
+                            >
+                                <IconAlert className="w-5 h-5" />
+                                <span>{showUnverified ? t.hideUnverified : t.showUnverified}</span>
                             </button>
                         </div>
                     </div>
