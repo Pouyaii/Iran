@@ -74,24 +74,24 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
         <!-- Header -->
         <header class="mb-6 md:mb-8 flex flex-col md:flex-row justify-between items-start md:items-center relative gap-4">
-            <div class="flex items-center w-full md:w-auto">
-                <button id="back-button" onclick="goBackToMap()" class="px-3 py-2 md:px-4 md:py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs md:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:shadow-md transition-all">
-                    Back to Map
-                </button>
-            </div>
-            <div class="text-left md:rtl:text-right w-full pr-24 md:pr-0">
+            <div class="text-left md:rtl:text-right w-full pr-24 md:pr-0 md:order-1">
                 <h1 id="header-title" class="text-2xl md:text-4xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 leading-tight">Iran Protest Crackdowns</h1>
                 <p id="header-desc" class="text-slate-500 dark:text-slate-400 text-sm md:text-lg">Comparing the scale of state violence from 1999 to Jan 2026</p>
             </div>
             
             <!-- Floating Controls for Mobile -->
-            <div class="flex items-center gap-2 absolute top-0 right-0 md:relative">
+            <div class="flex items-center gap-2 absolute top-0 right-0 md:relative md:order-2">
                 <button id="lang-toggle" onclick="toggleLang()" class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-farsi font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-200 shadow-sm">
                     فارسی
                 </button>
                 <button onclick="toggleTheme()" class="p-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all text-slate-600 dark:text-slate-400">
                     <svg id="icon-sun" class="w-5 h-5 text-amber-500 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+            <div class="flex items-center w-full md:w-auto md:order-3 md:ml-auto">
+                <button id="back-button" onclick="goBackToMap()" class="px-3 py-2 md:px-4 md:py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs md:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:shadow-md transition-all">
+                    Back to Map
                 </button>
             </div>
         </header>
@@ -403,7 +403,7 @@
 
     function updateChartTheme() {
         if (!myChart) return;
-        const gridColor = isDark ? '#334155' : '#f1f5f9';
+        const gridColor = isDark ? '#334155' : '#e2e8f0';
         const tickColor = isDark ? '#94a3b8' : '#64748b';
         myChart.options.scales.y.grid.color = gridColor;
         myChart.options.scales.x.ticks.color = tickColor;
@@ -473,6 +473,7 @@
     // --- Chart Initialization ---
     function initChart() {
         const ctx = document.getElementById('protestChart').getContext('2d');
+        const chartCanvas = document.getElementById('protestChart');
         const isMobile = window.innerWidth < 768;
         const dataConfig = getChartData();
 
@@ -572,7 +573,7 @@
                         beginAtZero: true,
                         grace: '10%',
                         position: isFarsi ? 'right' : 'left', 
-                        grid: { color: isDark ? '#334155' : '#f1f5f9' },
+                        grid: { color: isDark ? '#334155' : '#e2e8f0' },
                         ticks: { 
                             font: { family: isFarsi ? 'Vazirmatn' : 'Inter', size: isMobile ? 10 : 12 }, 
                             color: isDark ? '#94a3b8' : '#64748b',
@@ -614,6 +615,37 @@
                 animation: { duration: 500 }
             },
             plugins: [dataLabelsPlugin]
+        });
+
+        const clearChartTooltip = () => {
+            if (!myChart) return;
+            myChart.setActiveElements([]);
+            if (myChart.tooltip) {
+                myChart.tooltip.setActiveElements([], { x: 0, y: 0 });
+            }
+            myChart.update();
+        };
+
+        const handleChartPointer = (event) => {
+            if (!myChart) return;
+            const points = myChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+            if (points.length) {
+                myChart.setActiveElements(points);
+                if (myChart.tooltip) {
+                    myChart.tooltip.setActiveElements(points, { x: event.x, y: event.y });
+                }
+                myChart.update();
+            } else {
+                clearChartTooltip();
+            }
+        };
+
+        chartCanvas.addEventListener('click', handleChartPointer);
+        chartCanvas.addEventListener('touchend', handleChartPointer);
+        document.addEventListener('pointerdown', (event) => {
+            if (!chartCanvas.contains(event.target)) {
+                clearChartTooltip();
+            }
         });
     }
 
