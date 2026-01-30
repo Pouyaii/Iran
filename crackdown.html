@@ -74,18 +74,18 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
         <!-- Header -->
         <header class="mb-6 md:mb-8 flex flex-col md:flex-row justify-between items-start md:items-center relative gap-4">
-            <div class="text-left md:rtl:text-right w-full pr-24 md:pr-0 order-2 md:order-1">
-                <h1 id="header-title" class="text-2xl md:text-4xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 leading-tight">Iran Protest Crackdowns</h1>
-                <p id="header-desc" class="text-slate-500 dark:text-slate-400 text-sm md:text-lg">Comparing the scale of state violence from 1999 to Jan 2026</p>
-            </div>
-            <div class="flex items-center w-full md:w-auto order-1 md:order-2 md:ml-auto">
+            <div class="flex items-center w-full md:w-auto">
                 <button id="back-button" onclick="goBackToMap()" class="px-3 py-2 md:px-4 md:py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs md:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:shadow-md transition-all">
                     Back to Map
                 </button>
             </div>
+            <div class="text-left md:rtl:text-right w-full pr-24 md:pr-0">
+                <h1 id="header-title" class="text-2xl md:text-4xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 leading-tight">Iran Protest Crackdowns</h1>
+                <p id="header-desc" class="text-slate-500 dark:text-slate-400 text-sm md:text-lg">Comparing the scale of state violence from 1999 to Jan 2026</p>
+            </div>
             
             <!-- Floating Controls for Mobile -->
-            <div class="flex items-center gap-2 absolute top-0 right-0 md:relative order-3 md:ml-3">
+            <div class="flex items-center gap-2 absolute top-0 right-0 md:relative">
                 <button id="lang-toggle" onclick="toggleLang()" class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-farsi font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-200 shadow-sm">
                     فارسی
                 </button>
@@ -401,12 +401,9 @@
         document.getElementById('lang-toggle').innerText = isFarsi ? 'EN' : 'فارسی';
     }
 
-    const lightGridColor = '#e2e8f0';
-    const darkGridColor = '#334155';
-
     function updateChartTheme() {
         if (!myChart) return;
-        const gridColor = isDark ? darkGridColor : lightGridColor;
+        const gridColor = isDark ? '#334155' : '#f1f5f9';
         const tickColor = isDark ? '#94a3b8' : '#64748b';
         myChart.options.scales.y.grid.color = gridColor;
         myChart.options.scales.x.ticks.color = tickColor;
@@ -575,7 +572,7 @@
                         beginAtZero: true,
                         grace: '10%',
                         position: isFarsi ? 'right' : 'left', 
-                        grid: { color: isDark ? darkGridColor : lightGridColor },
+                        grid: { color: isDark ? '#334155' : '#f1f5f9' },
                         ticks: { 
                             font: { family: isFarsi ? 'Vazirmatn' : 'Inter', size: isMobile ? 10 : 12 }, 
                             color: isDark ? '#94a3b8' : '#64748b',
@@ -617,34 +614,6 @@
                 animation: { duration: 500 }
             },
             plugins: [dataLabelsPlugin]
-        });
-
-        const canvas = document.getElementById('protestChart');
-        const syncTooltip = (event) => {
-            const elements = myChart.getElementsAtEventForMode(
-                event,
-                'index',
-                { intersect: true },
-                false
-            );
-            if (elements.length) {
-                myChart.setActiveElements(elements);
-            } else {
-                myChart.setActiveElements([]);
-            }
-            myChart.update();
-        };
-
-        canvas.addEventListener('pointerdown', (event) => {
-            event.stopPropagation();
-            syncTooltip(event);
-        });
-
-        document.addEventListener('pointerdown', (event) => {
-            if (event.target !== canvas) {
-                myChart.setActiveElements([]);
-                myChart.update();
-            }
         });
     }
 
