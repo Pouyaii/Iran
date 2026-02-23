@@ -286,7 +286,11 @@
                 altAngle: "Alt Angle",
                 viewOnX: "View on X",
                 clickForInfo: "Click for more info",
-                unverifiedLocationNote: "Location data for unverified reports is automated and may be inaccurate."
+                unverifiedLocationNote: "Location data for unverified reports is automated and may be inaccurate.",
+                januaryWave: "January Wave",
+                februaryWave: "February Wave",
+                janShort: "Jan",
+                febShort: "Feb"
             },
             fa: {
                 title: "نقشه اعتراضات ایران",
@@ -332,7 +336,11 @@
                 altAngle: "زاویه دیگر",
                 viewOnX: "مشاهده در X",
                 clickForInfo: "برای اطلاعات بیشتر کلیک کنید",
-                unverifiedLocationNote: "مکان برای گزارش‌های تأییدنشده به‌صورت خودکار ثبت می‌شود و ممکن است دقیق نباشد."
+                unverifiedLocationNote: "مکان برای گزارش‌های تأییدنشده به‌صورت خودکار ثبت می‌شود و ممکن است دقیق نباشد.",
+                januaryWave: "دی",
+                februaryWave: "اسفند",
+                janShort: "دی",
+                febShort: "اسف"
             }
         };
 
@@ -447,13 +455,13 @@
             );
         };
 
-        const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView, isPerCapita, onTogglePerCapita }) => {
+        const ProtestGraph = ({ data, onClose, isDarkMode, t, lang, showUnverified, onToggleUnverified, chartView, onChangeChartView, isPerCapita, onTogglePerCapita, activeWave, onWaveChange }) => {
             const processedData = useMemo(() => {
                 const parseDate = (dateString) => new Date(`${dateString}T00:00:00Z`);
                 const formatDate = (dateObj) => dateObj.toISOString().slice(0, 10);
                 const uniqueDates = [...new Set(data.map(d => d.date))].sort();
                 if (uniqueDates.length === 0) return { dates: [], series: [] };
-                const chartEndDate = "2026-01-13";
+                const chartEndDate = activeWave === "january" ? "2026-01-13" : uniqueDates[uniqueDates.length - 1];
                 const minDate = parseDate(uniqueDates[0]);
                 const maxDataDate = parseDate(uniqueDates[uniqueDates.length - 1]);
                 const maxDate = parseDate(chartEndDate) > maxDataDate ? parseDate(chartEndDate) : maxDataDate;
@@ -473,7 +481,7 @@
                     };
                 });
                 return { dates, series };
-            }, [data]);
+            }, [activeWave, data]);
 
             const provinceData = useMemo(() => {
                 const normalizePerCapita = (value, province) => {
@@ -567,12 +575,13 @@
                 if (!dateString) return "";
                 const date = new Date(`${dateString}T00:00:00Z`);
                 if (Number.isNaN(date.getTime())) return dateString;
-                const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
+                const locale = lang === 'fa' ? 'fa-IR-u-ca-persian' : 'en-US';
                 return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' });
             };
+            const showInformationBlackout = activeWave === "january";
             const blackoutStartDate = "2026-01-08";
             const blackoutStartIndex = dates.indexOf(blackoutStartDate);
-            const blackoutStartX = blackoutStartIndex >= 0 ? getTimeX(blackoutStartIndex) : null;
+            const blackoutStartX = showInformationBlackout && blackoutStartIndex >= 0 ? getTimeX(blackoutStartIndex) : null;
             const blackoutEndX = width - padding;
             const blackoutLabelX = blackoutStartX !== null ? blackoutStartX + (blackoutEndX - blackoutStartX) / 2 : null;
             const blackoutLabelY = topPadding + 18;
@@ -593,6 +602,21 @@
                                     <p className={`text-xs text-gray-400 italic mt-1 ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>{t.chartNote}</p>
                                 )}
                                 <div className={`mt-3 flex flex-wrap items-center gap-2 ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
+                                    <div className={`flex items-center rounded-full border p-1 text-[11px] md:text-xs font-semibold ${isDarkMode ? 'bg-gray-800/70 border-gray-600 text-gray-200' : 'bg-white/80 border-gray-200 text-gray-700'}`}>
+                                        <button
+                                            onClick={() => onWaveChange('january')}
+                                            className={`px-3 py-1 rounded-full transition-all duration-200 ${activeWave === 'january' ? 'bg-blue-600 text-white' : ''}`}
+                                        >
+                                            {lang === 'fa' ? t.januaryWave : t.januaryWave}
+                                        </button>
+                                        <button
+                                            onClick={() => onWaveChange('february')}
+                                            className={`px-3 py-1 rounded-full transition-all duration-200 ${activeWave === 'february' ? 'bg-blue-600 text-white' : ''}`}
+                                        >
+                                            {lang === 'fa' ? t.februaryWave : t.februaryWave}
+                                        </button>
+                                    </div>
+                                    {activeWave === 'january' && (
                                     <button
                                         onClick={onToggleUnverified}
                                         className={`px-3 py-1.5 rounded-full border text-[11px] md:text-xs font-semibold transition-all duration-200 active:scale-95 ${isDarkMode ? 'bg-gray-800/70 border-gray-600 text-gray-200 hover:bg-gray-700/80' : 'bg-white/80 border-gray-200 text-gray-700 hover:bg-white'}`}
@@ -602,6 +626,7 @@
                                             <span>{showUnverified ? t.hideUnverified : t.showUnverified}</span>
                                         </span>
                                     </button>
+                                    )}
                                     <div className={`flex items-center rounded-full border p-1 text-[11px] md:text-xs font-semibold ${isDarkMode ? 'bg-gray-800/70 border-gray-600 text-gray-200' : 'bg-white/80 border-gray-200 text-gray-700'}`}>
                                         <button
                                             onClick={() => onChangeChartView('time')}
@@ -833,6 +858,7 @@
             const [chartView, setChartView] = useState('time');
             const [isPerCapita, setIsPerCapita] = useState(false);
             const [showUnverified, setShowUnverified] = useState(false);
+            const [activeWave, setActiveWave] = useState('february');
             const [showAllTooltips, setShowAllTooltips] = useState(false);
             const [showIdTooltips, setShowIdTooltips] = useState(false);
             const [dateFilter, setDateFilter] = useState(null); 
@@ -996,7 +1022,7 @@
             }, [focusIncident, idSearchBuffer, idSearchMode, showUnverified, unverifiedIncidents, verifiedIncidents]);
 
             // --- Data Definitions (Updated with 245 verified and 201 unverified) ---
-            const verifiedIncidents = useMemo(() => tagIncidents([
+            const januaryVerifiedIncidents = useMemo(() => tagIncidents([
                 {"id": 1, "verified": true, "desc": "Protesters push back police and security forces on Jomhouri Street, Tehran", "desc_fa": "عقب راندن نیروهای پلیس و امنیتی توسط معترضان در خیابان جمهوری تهران", "coords": [35.6927461, 51.4255329], "province": "Tehran", "link": "https://x.com/Shayan86/status/2005987583445090377", "date": "2025-12-30", "size": "big", "alt": null},
                 {"id": 2, "verified": true, "desc": "Protesters outside Ghasr shopping centre on Qeshm Island", "desc_fa": "تجمع معترضان مقابل مرکز خرید قصر در جزیره قشم", "coords": [26.968793, 56.075395], "province": "Hormozgan", "link": "https://x.com/Shayan86/status/2005999164979867916", "date": "2025-12-30", "size": "medium", "alt": null},
                 {"id": 3, "verified": true, "desc": "Group gathered in Tehran", "desc_fa": "تجمع گروهی از مردم در تهران", "coords": [35.752619, 51.466106], "province": "Tehran", "link": "https://x.com/GhonchehAzad/status/2005992119258038527", "date": "2025-12-30", "size": "big", "alt": null},
@@ -1245,7 +1271,28 @@
             ]), []);
 
             // --- Unverified Data (Same as provided) ---
-            const unverifiedIncidents = useMemo(() => tagIncidents([
+            const februaryVerifiedIncidents = useMemo(() => tagIncidents([
+                {"id": 1, "verified": true, "desc": "Protesters marching at Sharif University of Technology, chanting slogans against the supreme leader.", "desc_fa": "راهپیمایی معترضان در دانشگاه صنعتی شریف همراه با شعار علیه رهبر جمهوری اسلامی.", "coords": [35.702591, 51.352897], "province": "Tehran", "link": "https://x.com/Shayan86/status/2025297965967900934", "date": "2026-02-21", "size": "big", "alt": null},
+                {"id": 2, "verified": true, "desc": "Student protesters at Tehran's Sharif University are confronted by pro-regime Basiji students, leading to clashes inside the campus.", "desc_fa": "دانشجویان معترض در دانشگاه شریف تهران با دانشجویان بسیجیِ حامی حکومت درگیر شدند.", "coords": [35.700724, 51.35282], "province": "Tehran", "link": "https://x.com/Shayan86/status/2025303394630422546", "date": "2026-02-21", "size": "medium", "alt": "https://x.com/Shayan86/status/2025308032737972431, https://x.com/FSeifikaran/status/2025166930324177043, https://x.com/daneshjo_pishro/status/2025158132184355010"},
+                {"id": 3, "verified": true, "desc": "Protestors took to the streets after a well-known political activist was arrested by security forces.", "desc_fa": "پس از بازداشت یک فعال سیاسی شناخته‌شده توسط نیروهای امنیتی، معترضان به خیابان آمدند.", "coords": [32.994233, 47.421764], "province": "Ilam", "link": "https://x.com/Shayan86/status/2025321385183092750", "date": "2026-02-21", "size": "medium", "alt": null},
+                {"id": 4, "verified": true, "desc": "Security forces fire shots towards protesters as people run to safety", "desc_fa": "نیروهای امنیتی به سمت معترضان شلیک کردند و مردم برای نجات جان خود فرار کردند.", "coords": [32.990842, 47.417437], "province": "Ilam", "link": "https://x.com/Shayan86/status/2025327629952323742", "date": "2026-02-21", "size": "small", "alt": null},
+                {"id": 5, "verified": true, "desc": "Students chant \"freedom\" at Sharif University of Technology in Tehran and raise the Lion and Sun flag of Iran inside the campus.", "desc_fa": "دانشجویان در دانشگاه صنعتی شریف تهران شعار «آزادی» سر دادند و پرچم شیر و خورشید را برافراشتند.", "coords": [35.702594, 51.352944], "province": "Tehran", "link": "https://x.com/Shayan86/status/2025561987254513939", "date": "2026-02-22", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2025573248197370336"},
+                {"id": 6, "verified": true, "desc": "Violent clashes break out between students and pro-regime Basij members who attack protesters inside Tehran's Amirkabir University of Technology.", "desc_fa": "درگیری شدید میان دانشجویان و بسیجی‌های حامی حکومت در دانشگاه صنعتی امیرکبیر تهران رخ داد.", "coords": [35.704232, 51.407959], "province": "Tehran", "link": "https://x.com/Shayan86/status/2025571640612880404", "date": "2026-02-22", "size": "big", "alt": "https://x.com/FSeifikaran/status/2025515843686105475"},
+                {"id": 7, "verified": true, "desc": "Students hold an anti-government rally inside the University of Tehran's school of practical arts on Sunday.", "desc_fa": "دانشجویان روز یکشنبه در دانشکده هنرهای کاربردی دانشگاه تهران تجمع ضدحکومتی برگزار کردند.", "coords": [35.703334, 51.406291], "province": "Tehran", "link": "https://x.com/Shayan86/status/2025573605413728644", "date": "2026-02-22", "size": "medium", "alt": null},
+                {"id": 8, "verified": true, "desc": "Students at Tehran's Shahid Beheshti Univeristy chant \"long live the Shah\" and \"atrocity is their pride, Hussain Hussain is their chant\" during a protest held on campus on Sunday.", "desc_fa": "دانشجویان دانشگاه شهید بهشتی تهران در تجمع روز یکشنبه شعار «جاوید شاه» و «جنایت افتخارشان، حسین حسین شعارشان» سر دادند.", "coords": [35.800018, 51.393216], "province": "Tehran", "link": "https://x.com/Shayan86/status/2025654893143347435", "date": "2026-02-22", "size": "big", "alt": "https://x.com/FSeifikaran/status/2025508406631477695"},
+                {"id": 9, "verified": true, "desc": "Students inside the University of Tehran chant slogans in support of Reza Pahlavi, the exiled son of Iran's late Shah during protests held on campus today.", "desc_fa": "دانشجویان دانشگاه تهران در اعتراضات امروزِ دانشگاه شعارهایی در حمایت از رضا پهلوی سر دادند.", "coords": [35.703989, 51.395592], "province": "Tehran", "link": "https://x.com/Shayan86/status/2025656437066613180", "date": "2026-02-22", "size": "big", "alt": "https://x.com/FSeifikaran/status/2025531006485139884"},
+                {"id": 10, "verified": true, "desc": "Clashes break out between students and members of the pro-regime Basij inside the University of Science and Technology in east Tehran.", "desc_fa": "در دانشگاه علم و صنعت در شرق تهران میان دانشجویان و اعضای بسیج درگیری رخ داد.", "coords": [35.740597, 51.505113], "province": "Tehran", "link": "https://x.com/Shayan86/status/2025659056757641461", "date": "2026-02-22", "size": "big", "alt": "https://x.com/FSeifikaran/status/2025505819039518809"},
+                {"id": 11, "verified": true, "desc": "Students at Amirkabir University in Tehran chanting “Javid Shah”", "desc_fa": "دانشجویان دانشگاه امیرکبیر تهران شعار «جاوید شاه» سر دادند.", "coords": [35.704, 51.408], "province": "Tehran", "link": "https://x.com/GhonchehAzad/status/2025203009882300723", "date": "2026-02-21", "size": "big", "alt": "https://x.com/andynovy/status/2025212414912782836"},
+                {"id": 12, "verified": true, "desc": "Mourners chanting “Death to Khamenei” in Abdanan cemetery in western Iran, during a memorial ceremony for Alireza Seydi, a teenager killed during the recent protests in Iran.", "desc_fa": "سوگواران در آرامستان آبدانان در مراسم یادبود علیرضا صیدی شعار «مرگ بر خامنه‌ای» سر دادند.", "coords": [32.985409, 47.422738], "province": "Ilam", "link": "https://x.com/GhonchehAzad/status/2023769733032800379", "date": "2026-02-17", "size": "big", "alt": null},
+                {"id": 13, "verified": true, "desc": "On the eve of planned events to commemorate 40 days since the killing of thousands of Iranian protesters, new videos shows protests and chants of \"death to Khamenei\" breaking out in Abdanan, Ilam province.", "desc_fa": "در آستانه مراسم چهلم کشته‌شدگان، ویدیوهای تازه‌ای از اعتراض و شعار «مرگ بر خامنه‌ای» در آبدانان ایلام منتشر شد.", "coords": [32.992297, 47.420983], "province": "Ilam", "link": "https://x.com/Shayan86/status/2023482314177843469", "date": "2026-02-16", "size": "small", "alt": null},
+                {"id": 14, "verified": true, "desc": "Gunshots are heard as protesters run for safety at the Martyrs of Abdanan cemetery on the commemoration of 40 days since the killing of thousands of protesters.", "desc_fa": "در آرامستان شهدای آبدانان همزمان با چهلم جان‌باختگان، صدای تیراندازی شنیده شد و معترضان فرار کردند.", "coords": [32.985579, 47.423045], "province": "Ilam", "link": "https://x.com/Shayan86/status/2023804370534740369", "date": "2026-02-17", "size": "big", "alt": "https://x.com/Shayan86/status/2023804761062207612, https://x.com/Shayan86/status/2023819532360708224"},
+                {"id": 15, "verified": true, "desc": "A group of people chant in support of slain protesters outside Imam Hossein Mosque in Mashhad, where commemoration events were held for firefighter Hamid Mahdavi who was killed in the protests.", "desc_fa": "گروهی از مردم بیرون مسجد امام حسین مشهد در حمایت از کشته‌شدگان اعتراضات شعار دادند.", "coords": [36.322178, 59.477426], "province": "Khorasan Razavi", "link": "https://x.com/Shayan86/status/2023806649421414774", "date": "2026-02-17", "size": "big", "alt": null},
+                {"id": 16, "verified": true, "desc": "Students protesting against both the Islamic Republic and Monarchy, chanting \"Death to the oppressor, be it the Shah or the Rahbar\", \"Women, Life, Freedom\", \"Iranian Republic\", \"Freedom freedom freedom\"", "desc_fa": "دانشجویان علیه جمهوری اسلامی و سلطنت هم‌زمان شعارهایی چون «مرگ بر ستمگر چه شاه باشه چه رهبر» و «زن، زندگی، آزادی» سر دادند.", "coords": [35.703559, 51.395767], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2025564889616621836", "date": "2026-02-22", "size": "big", "alt": null},
+                {"id": 17, "verified": true, "desc": "Clashes between students and Basij forces at Ferdowsi University of Mashhad", "desc_fa": "درگیری میان دانشجویان و نیروهای بسیج در دانشگاه فردوسی مشهد", "coords": [36.310196, 59.528734], "province": "Khorasan Razavi", "link": "https://x.com/FSeifikaran/status/2025542764872757425", "date": "2026-02-22", "size": "big", "alt": null},
+                {"id": 18, "verified": true, "desc": "Students of K. N. Toosi University of Technology (دانشگاه خواجه‌نصیر) gathered with the chant \"We will fight, we will die, we will take Iran back!\"", "desc_fa": "دانشجویان دانشگاه خواجه نصیر با شعار «می‌جنگیم، می‌میریم، ایران را پس می‌گیریم» تجمع کردند.", "coords": [35.76267, 51.412761], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2025513849823097164", "date": "2026-02-22", "size": "medium", "alt": null}
+            ]), []);
+
+            const januaryUnverifiedIncidents = useMemo(() => tagIncidents([
                 {"id": "u1", "verified": false, "desc": "Protesters marching on Ferdowsi Street near Sar Manouchehri", "desc_fa": "معترضان در حال راهپیمایی در خیابان فردوسی نزدیک سر منوچهری", "coords": [35.6892, 51.389], "province": "Tehran", "link": "https://x.com/Vahid/status/2005629230886072346", "date": "2025-12-30", "size": "medium", "alt": null},
                 {"id": "u2", "verified": false, "desc": "Gathering and protests outside Ghasr shopping center", "desc_fa": "تجمع و اعتراضات خارج از مرکز خرید قصر", "coords": [26.9584, 56.2716], "province": "Hormozgan", "link": "https://x.com/Vahid/status/2005667136111571200", "date": "2025-12-30", "size": "medium", "alt": null},
                 {"id": "u3", "verified": false, "desc": "Protests and clashes in Marlik", "desc_fa": "اعتراضات و درگیری‌ها در مارلیک", "coords": [35.6995, 50.9822], "province": "Alborz", "link": "https://x.com/Vahid/status/2005666037942136865", "date": "2025-12-30", "size": "medium", "alt": null},
@@ -1451,6 +1498,9 @@
             
             ]), []);
 
+            const verifiedIncidents = activeWave === "february" ? februaryVerifiedIncidents : januaryVerifiedIncidents;
+            const unverifiedIncidents = activeWave === "february" ? [] : januaryUnverifiedIncidents;
+
             const allIncidents = useMemo(() => {
                 const combined = showUnverified ? [...verifiedIncidents, ...unverifiedIncidents] : verifiedIncidents;
                 return combined.map(i => ({
@@ -1458,7 +1508,7 @@
                     link: i.link.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, ''),
                     alt: i.alt ? i.alt.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, '').split(',')[0].trim() : null
                 }));
-            }, [verifiedIncidents, unverifiedIncidents, showUnverified]);
+            }, [showUnverified, unverifiedIncidents, verifiedIncidents]);
 
             // --- Timeline Data ---
             const { uniqueDates, minDate, maxDate } = useMemo(() => {
@@ -1471,6 +1521,15 @@
                 if (!dateFilter) return allIncidents;
                 return allIncidents.filter(i => i.date === dateFilter);
             }, [allIncidents, dateFilter]);
+
+            useEffect(() => {
+                setDateFilter(null);
+                setIsPlaying(false);
+                setSelectedIncident(null);
+                if (activeWave === "february") {
+                    setShowUnverified(false);
+                }
+            }, [activeWave]);
 
             // Playback logic
             useEffect(() => {
@@ -1760,6 +1819,24 @@
                         </div>
                     </div>
 
+                    {/* Wave Toggle (Desktop/Tablet) */}
+                    <div className="hidden md:flex absolute top-safe pt-2 md:top-6 left-1/2 -translate-x-1/2 z-[1000] pointer-events-auto">
+                        <div className={`backdrop-blur-xl shadow-xl rounded-full p-1 border flex items-center transition-colors duration-300 ${glassClass}`}>
+                            <button
+                                onClick={() => setActiveWave('january')}
+                                className={`px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-200 active:scale-95 ${activeWave === 'january' ? 'bg-blue-600 text-white' : `${glassHover} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}`}
+                            >
+                                {t.januaryWave}
+                            </button>
+                            <button
+                                onClick={() => setActiveWave('february')}
+                                className={`px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-200 active:scale-95 ${activeWave === 'february' ? 'bg-blue-600 text-white' : `${glassHover} ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}`}
+                            >
+                                {t.februaryWave}
+                            </button>
+                        </div>
+                    </div>
+
                     {/* Top Controls */}
                     <div className={`absolute top-safe pt-2 md:top-6 z-[1000] flex flex-col space-y-2 md:space-y-3 items-end ${lang === 'fa' ? 'left-4 md:left-6 items-start' : 'right-4 md:right-6 items-end'}`}>
                         <div className={`backdrop-blur-xl shadow-xl rounded-full p-1.5 md:p-1.5 border flex items-center space-x-2 transition-colors duration-300 ${glassClass} ${lang === 'fa' ? 'space-x-reverse' : ''}`}>
@@ -1791,6 +1868,7 @@
                                 <span>{t.compareScale}</span>
                             </button>
 
+                             {activeWave === 'january' && (
                              <button 
                                 onClick={() => setShowUnverified(!showUnverified)} 
                                 className={`backdrop-blur-xl shadow-xl rounded-full px-3 py-2 md:px-4 md:py-2 border flex items-center justify-center space-x-2 text-xs md:text-sm font-semibold transition-all duration-200 active:scale-95 ${glassClass} ${glassHover} ${lang === 'fa' ? 'space-x-reverse font-[Vazirmatn]' : ''}`}
@@ -1798,12 +1876,29 @@
                                 <IconAlert className="w-5 h-5" />
                                 <span>{showUnverified ? t.hideUnverified : t.showUnverified}</span>
                             </button>
+                            )}
                         </div>
                     </div>
 
                     {/* Timeline Slider (Bottom Center) - Safe Area Aware */}
                     <div className={`absolute bottom-6 md:bottom-8 left-0 right-0 z-[1000] px-4 md:px-0 flex justify-center mb-safe transition-all duration-300 ${selectedIncident ? 'translate-y-[150%] md:translate-y-0 opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto' : ''}`}>
                          <div className={`w-full max-w-xl backdrop-blur-xl shadow-2xl rounded-2xl p-3 md:p-4 border flex flex-col space-y-3 transition-colors duration-300 timeline-flag-glass pointer-events-auto ${lang === 'fa' ? 'font-[Vazirmatn]' : ''}`}>
+                            <div className="md:hidden flex justify-center">
+                                <div className={`rounded-full p-1 border flex items-center ${isDarkMode ? 'bg-gray-900/70 border-gray-700 text-gray-200' : 'bg-white/80 border-gray-200 text-gray-700'}`}>
+                                    <button
+                                        onClick={() => setActiveWave('january')}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${activeWave === 'january' ? 'bg-blue-600 text-white' : ''}`}
+                                    >
+                                        {t.janShort}
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveWave('february')}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${activeWave === 'february' ? 'bg-blue-600 text-white' : ''}`}
+                                    >
+                                        {t.febShort}
+                                    </button>
+                                </div>
+                            </div>
                             <div className={`flex justify-between items-center text-xs font-bold uppercase tracking-wide opacity-90 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                                 <span>{t.timeline}</span>
                                 <span>{dateFilter ? formatDateWithWeekday(dateFilter, lang) : t.showingAll}</span>
@@ -1863,6 +1958,8 @@
                             lang={lang}
                             showUnverified={showUnverified}
                             onToggleUnverified={() => setShowUnverified(!showUnverified)}
+                            activeWave={activeWave}
+                            onWaveChange={setActiveWave}
                             chartView={chartView}
                             onChangeChartView={setChartView}
                             isPerCapita={isPerCapita}
