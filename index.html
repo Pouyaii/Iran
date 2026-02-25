@@ -858,7 +858,14 @@
             const [chartView, setChartView] = useState('time');
             const [isPerCapita, setIsPerCapita] = useState(false);
             const [showUnverified, setShowUnverified] = useState(false);
-            const [activeWave, setActiveWave] = useState('february');
+            const [activeWave, setActiveWave] = useState(() => {
+                try {
+                    const hasVisited = window.localStorage.getItem('iran-map-has-visited');
+                    return hasVisited ? 'february' : 'january';
+                } catch {
+                    return 'january';
+                }
+            });
             const [showAllTooltips, setShowAllTooltips] = useState(false);
             const [showIdTooltips, setShowIdTooltips] = useState(false);
             const [dateFilter, setDateFilter] = useState(null); 
@@ -1289,7 +1296,22 @@
                 {"id": 15, "verified": true, "desc": "A group of people chant in support of slain protesters outside Imam Hossein Mosque in Mashhad, where commemoration events were held for firefighter Hamid Mahdavi who was killed in the protests.", "desc_fa": "گروهی از مردم بیرون مسجد امام حسین مشهد در حمایت از کشته‌شدگان اعتراضات شعار دادند.", "coords": [36.322178, 59.477426], "province": "Khorasan Razavi", "link": "https://x.com/Shayan86/status/2023806649421414774", "date": "2026-02-17", "size": "big", "alt": null},
                 {"id": 16, "verified": true, "desc": "Students protesting against both the Islamic Republic and Monarchy, chanting \"Death to the oppressor, be it the Shah or the Rahbar\", \"Women, Life, Freedom\", \"Iranian Republic\", \"Freedom freedom freedom\"", "desc_fa": "دانشجویان علیه جمهوری اسلامی و سلطنت هم‌زمان شعارهایی چون «مرگ بر ستمگر چه شاه باشه چه رهبر» و «زن، زندگی، آزادی» سر دادند.", "coords": [35.703559, 51.395767], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2025564889616621836", "date": "2026-02-22", "size": "big", "alt": null},
                 {"id": 17, "verified": true, "desc": "Clashes between students and Basij forces at Ferdowsi University of Mashhad", "desc_fa": "درگیری میان دانشجویان و نیروهای بسیج در دانشگاه فردوسی مشهد", "coords": [36.310196, 59.528734], "province": "Khorasan Razavi", "link": "https://x.com/FSeifikaran/status/2025542764872757425", "date": "2026-02-22", "size": "big", "alt": null},
-                {"id": 18, "verified": true, "desc": "Students of K. N. Toosi University of Technology (دانشگاه خواجه‌نصیر) gathered with the chant \"We will fight, we will die, we will take Iran back!\"", "desc_fa": "دانشجویان دانشگاه خواجه نصیر با شعار «می‌جنگیم، می‌میریم، ایران را پس می‌گیریم» تجمع کردند.", "coords": [35.76267, 51.412761], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2025513849823097164", "date": "2026-02-22", "size": "medium", "alt": null}
+                {"id": 18, "verified": true, "desc": "Students of K. N. Toosi University of Technology (دانشگاه خواجه‌نصیر) gathered with the chant \"We will fight, we will die, we will take Iran back!\"", "desc_fa": "دانشجویان دانشگاه خواجه نصیر با شعار «می‌جنگیم، می‌میریم، ایران را پس می‌گیریم» تجمع کردند.", "coords": [35.76267, 51.412761], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2025513849823097164", "date": "2026-02-22", "size": "medium", "alt": null},
+
+                {"id": 19, "verified": true, "desc": "Students chanting \"This year is the year of blood, Seyed Ali [Khamenei] will be toppled\" at all-female Alzahra University in Tehran.", "desc_fa": "دانشجویان در دانشگاه الزهرا تهران شعار «امسال سالِ خونه، سیدعلی سرنگونه» سر دادند.", "coords": [35.767493, 51.392313], "province": "Tehran", "link": "https://x.com/GhonchehAzad/status/2025862762384011456", "date": "2026-02-23", "size": "big", "alt": "https://x.com/GhonchehAzad/status/2025890988946825609, https://x.com/FSeifikaran/status/2025867193171198395, https://x.com/FSeifikaran/status/2026056232339968004"},
+                {"id": 20, "verified": true, "desc": "Students at the University of Tehran chanting \"For each person killed, a thousand stand behind them\" and \"Woman, Life, Freedom\" at the Faculty of Foreign Languages.", "desc_fa": "دانشجویان دانشکده زبان‌های خارجی دانشگاه تهران شعار «به هر کشته هزار نفر پشتشه» و «زن، زندگی، آزادی» سر دادند.", "coords": [35.730506, 51.388122], "province": "Tehran", "link": "https://x.com/GhonchehAzad/status/2025867038539776135", "date": "2026-02-23", "size": "big", "alt": "https://x.com/FSeifikaran/status/2025900177857347963"},
+                {"id": 21, "verified": true, "desc": "Clashes between pro and anti-establishment crowds at the University of Tehran.", "desc_fa": "درگیری میان گروه‌های حامی و مخالف حکومت در دانشگاه تهران.", "coords": [35.704434, 51.393973], "province": "Tehran", "link": "https://x.com/GhonchehAzad/status/2025954854066131125", "date": "2026-02-23", "size": "medium", "alt": null},
+                {"id": 22, "verified": true, "desc": "Pro-establishment supporters carrying a flag attack and chase a person at Iran University of Science and Technology.", "desc_fa": "حامیان حکومت با در دست داشتن پرچم، فردی را در دانشگاه علم و صنعت ایران تعقیب و مورد حمله قرار دادند.", "coords": [35.742149, 51.507097], "province": "Tehran", "link": "https://x.com/GhonchehAzad/status/2026238455227843034", "date": "2026-02-24", "size": "small", "alt": "https://x.com/EndlessWint_r/status/2026287404751995251"},
+                {"id": 23, "verified": true, "desc": "Clashes between anti and pro-establishment groups, with shouts of \"dishonourable\" at K. N. Toosi University.", "desc_fa": "درگیری میان مخالفان و حامیان حکومت با شعار «بی‌شرف» در دانشگاه خواجه‌نصیر.", "coords": [35.758239, 51.406505], "province": "Tehran", "link": "https://x.com/GhonchehAzad/status/2026251836609442289", "date": "2026-02-24", "size": "medium", "alt": null},
+                {"id": 24, "verified": true, "desc": "Students chanting \"this is the final battle, Pahlavi will return\" and \"death to dictator\" at Pars University of Architecture and Art in Tehran.", "desc_fa": "دانشجویان دانشگاه پارس تهران شعار «این آخرین نبرده، پهلوی برمی‌گرده» و «مرگ بر دیکتاتور» سر دادند.", "coords": [35.721786, 51.393256], "province": "Tehran", "link": "https://x.com/GhonchehAzad/status/2026638339726602407", "date": "2026-02-25", "size": "medium", "alt": "https://x.com/GhonchehAzad/status/2026638798696706072"},
+                {"id": 25, "verified": true, "desc": "Female students removed their mandatory veils and chanted \"freedom\" and anti-Khamenei slogans at Tehran University of Art.", "desc_fa": "دانشجویان دختر در دانشگاه هنر تهران حجاب اجباری را برداشتند و شعار «آزادی» و شعارهای ضدخامنه‌ای دادند.", "coords": [35.703213, 51.406415], "province": "Tehran", "link": "https://x.com/ShahramRafizade/status/2026251356940480552", "date": "2026-02-24", "size": "medium", "alt": "https://x.com/FSeifikaran/status/2026275618963214361, https://x.com/FSeifikaran/status/2026239859627630796, https://x.com/FSeifikaran/status/2026242832772538794, https://x.com/FSeifikaran/status/2026235186753544245"},
+                {"id": 26, "verified": true, "desc": "Students at Sharif University of Technology protesting and holding hands.", "desc_fa": "دانشجویان دانشگاه صنعتی شریف در حال اعتراض و گرفتن دست‌های یکدیگر.", "coords": [35.704067, 51.351542], "province": "Tehran", "link": "https://x.com/justchangingun/status/2026273127756403055", "date": "2026-02-24", "size": "big", "alt": "https://x.com/EndlessWint_r/status/2026581693209907651"},
+                {"id": 27, "verified": true, "desc": "Start of student protests at the Central Campus of the University of Tehran.", "desc_fa": "آغاز اعتراضات دانشجویی در پردیس مرکزی دانشگاه تهران.", "coords": [35.703994, 51.395810], "province": "Tehran", "link": "https://x.com/autnews_org/status/2026606787563024469", "date": "2026-02-25", "size": "big", "alt": "https://x.com/EndlessWint_r/status/2026614182158680363, https://x.com/GhonchehAzad/status/2026620934266720383", "note": "The exact date for this footage is still uncertain.", "note_fa": "تاریخ دقیق این ویدیو هنوز قطعی نیست."},
+                {"id": 28, "verified": true, "desc": "Large protest crowd at a memorial in Nurabad, Fars Province chanting pro-Pahlavi slogans.", "desc_fa": "جمعیت زیادی در مراسم یادبود در نورآباد فارس شعارهای حامی پهلوی سر دادند.", "coords": [30.114333, 51.550814], "province": "Fars", "link": "https://x.com/realRayanAmiri/status/2024562110957543638", "date": "2026-02-19", "size": "big", "alt": "https://x.com/EndlessWint_r/status/2024836536940761414"},
+                {"id": 29, "verified": true, "desc": "Students held a protest and honored the memory of Saghar Seifollahi at Kharazmi University.", "desc_fa": "دانشجویان دانشگاه خوارزمی تجمع اعتراضی برگزار کردند و یاد ساغر سیف‌اللهی را گرامی داشتند.", "coords": [35.704415, 51.426756], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2026622279237468388", "date": "2026-02-25", "size": "medium", "alt": null},
+                {"id": 30, "verified": true, "desc": "Protest gathering at the University of Art in Tehran with chants of \"political prisoners must be freed\" and \"death to dictator\" while students held the Lion and Sun flag.", "desc_fa": "در تجمع اعتراضی دانشگاه هنر تهران، دانشجویان با در دست داشتن پرچم شیر و خورشید شعار «زندانی سیاسی آزاد باید گردد» و «مرگ بر دیکتاتور» سر دادند.", "coords": [35.703243, 51.406443], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2026602800331833680", "date": "2026-02-25", "size": "medium", "alt": "https://x.com/FSeifikaran/status/2026603486285013369"},
+                {"id": 31, "verified": true, "desc": "Student protest gathering at the University of Tehran with the chant \"you are immoral, you are depraved, I am a free woman\".", "desc_fa": "تجمع اعتراضی دانشجویان دانشگاه تهران با شعار «هیز تویی، هرزه تویی، زن آزاده منم».", "coords": [35.704438, 51.394047], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2026292145334677752", "date": "2026-02-24", "size": "medium", "alt": null},
+                {"id": 32, "verified": true, "desc": "Protest gathering of Shahid Beheshti University students in Tehran.", "desc_fa": "تجمع اعتراضی دانشجویان دانشگاه شهید بهشتی تهران.", "coords": [35.798129, 51.394102], "province": "Tehran", "link": "https://x.com/FSeifikaran/status/2026228952272883967", "date": "2026-02-24", "size": "medium", "alt": null},
             ]), []);
 
             const januaryUnverifiedIncidents = useMemo(() => tagIncidents([
@@ -1506,9 +1528,17 @@
                 return combined.map(i => ({
                     ...i,
                     link: i.link.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, ''),
-                    alt: i.alt ? i.alt.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, '').split(',')[0].trim() : null
+                    alt: i.alt ? i.alt.replace(/^\[|\]\(.*?\)$/g, '').replace(/\)$/, '').trim() : null
                 }));
             }, [showUnverified, unverifiedIncidents, verifiedIncidents]);
+
+            const getAltUrls = useCallback((altValue) => {
+                if (!altValue) return [];
+                return altValue
+                    .split(',')
+                    .map(url => url.trim())
+                    .filter(Boolean);
+            }, []);
 
             // --- Timeline Data ---
             const { uniqueDates, minDate, maxDate } = useMemo(() => {
@@ -1530,6 +1560,14 @@
                     setShowUnverified(false);
                 }
             }, [activeWave]);
+
+            useEffect(() => {
+                try {
+                    window.localStorage.setItem('iran-map-has-visited', 'true');
+                } catch {
+                    // Ignore storage failures (private mode, blocked storage, etc.)
+                }
+            }, []);
 
             // Playback logic
             useEffect(() => {
@@ -1889,13 +1927,13 @@
                                         onClick={() => setActiveWave('january')}
                                         className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${activeWave === 'january' ? 'bg-blue-600 text-white' : ''}`}
                                     >
-                                        {t.janShort}
+                                        {t.januaryWave}
                                     </button>
                                     <button
                                         onClick={() => setActiveWave('february')}
                                         className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${activeWave === 'february' ? 'bg-blue-600 text-white' : ''}`}
                                     >
-                                        {t.febShort}
+                                        {t.februaryWave}
                                     </button>
                                 </div>
                             </div>
@@ -2092,13 +2130,19 @@
                                         </div>
                                         {selectedIncident.alt && (
                                             <div>
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <h3 className={`text-sm font-bold uppercase tracking-wide ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t.altAngle}</h3>
-                                                    <a href={selectedIncident.alt.split(',')[0]} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline flex items-center p-2 -mr-2">
-                                                        {t.viewOnX} <IconExternalLink className="w-3 h-3 ml-1" />
-                                                    </a>
-                                                </div>
-                                                <TweetEmbed url={selectedIncident.alt} isDarkMode={isDarkMode} />
+                                                {getAltUrls(selectedIncident.alt).map((altUrl, index) => (
+                                                    <div key={altUrl} className={index > 0 ? 'mt-6' : ''}>
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <h3 className={`text-sm font-bold uppercase tracking-wide ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                {index === 0 ? t.altAngle : `${t.altAngle} ${index + 1}`}
+                                                            </h3>
+                                                            <a href={altUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline flex items-center p-2 -mr-2">
+                                                                {t.viewOnX} <IconExternalLink className="w-3 h-3 ml-1" />
+                                                            </a>
+                                                        </div>
+                                                        <TweetEmbed url={altUrl} isDarkMode={isDarkMode} />
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
