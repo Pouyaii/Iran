@@ -461,7 +461,8 @@
                 const formatDate = (dateObj) => dateObj.toISOString().slice(0, 10);
                 const uniqueDates = [...new Set(data.map(d => d.date))].sort();
                 if (uniqueDates.length === 0) return { dates: [], series: [] };
-                const chartEndDate = activeWave === "january" ? "2026-01-13" : uniqueDates[uniqueDates.length - 1];
+                const chartEndDateByWave = { january: "2026-01-13", february: "2026-02-26" };
+                const chartEndDate = chartEndDateByWave[activeWave] || uniqueDates[uniqueDates.length - 1];
                 const minDate = parseDate(uniqueDates[0]);
                 const maxDataDate = parseDate(uniqueDates[uniqueDates.length - 1]);
                 const maxDate = parseDate(chartEndDate) > maxDataDate ? parseDate(chartEndDate) : maxDataDate;
